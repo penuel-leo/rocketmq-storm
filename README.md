@@ -11,6 +11,8 @@ As the name implies,It handle the messages in a batch way,also with supporting r
 #### DefaultMessageSpout: 
 Based on batchMessageSpout,cache batch messages and emit message one by one.It is also recommendation spout at the present stage
 
+#### AsyncMessageSpout: 
+Implementing...
 
 ## Documentation
 Please look forward to!
