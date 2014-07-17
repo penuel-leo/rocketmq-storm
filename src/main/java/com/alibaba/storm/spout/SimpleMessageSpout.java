@@ -1,0 +1,189 @@
+package com.alibaba.storm.spout;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import backtype.storm.spout.SpoutOutputCollector;
+import backtype.storm.task.TopologyContext;
+import backtype.storm.topology.IRichSpout;
+import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.tuple.Fields;
+import backtype.storm.tuple.Values;
+
+import com.alibaba.jstorm.utils.Pair;
+import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
+import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
+import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
+import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
+import com.alibaba.rocketmq.common.message.MessageExt;
+import com.alibaba.storm.mq.MQConfig;
+import com.alibaba.storm.mq.MessageConsumer;
+import com.alibaba.storm.mq.MessageStat;
+import com.google.common.collect.MapMaker;
+
+/**
+ * @author Von Gosling
+ */
+public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrently {
+    private static final long                            serialVersionUID = -2277714452693486954L;
+
+    private static final Logger                          LOG              = LoggerFactory
+                                                                                  .getLogger(SimpleMessageSpout.class);
+
+    private MessageConsumer                              consumer;
+
+    private SpoutOutputCollector                         collector;
+    private TopologyContext                              context;
+
+    private BlockingQueue<Pair<MessageExt, MessageStat>> failureQueue     = new LinkedBlockingQueue<Pair<MessageExt, MessageStat>>();
+    private Map<String, Pair<MessageExt, MessageStat>>   failureMsgs;
+
+    private MQConfig                                     config;
+
+    public SimpleMessageSpout(MQConfig config) {
+        this.config = config;
+    }
+
+    public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
+        this.collector = collector;
+        this.context = context;
+        this.failureMsgs = new MapMaker().makeMap();
+        if (consumer == null) {
+            try {
+                String instanceName = String.valueOf(context.getThisTaskId());
+
+                consumer = new MessageConsumer(config);
+
+                consumer.init(this, instanceName);
+            } catch (Exception e) {
+                LOG.error("Failed to init consumer!", e);
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public void close() {
+        if (!failureMsgs.isEmpty()) {
+            for (Entry<String, Pair<MessageExt, MessageStat>> entry : failureMsgs.entrySet()) {
+                Pair<MessageExt, MessageStat> pair = entry.getValue();
+                LOG.warn("Failed to handle message {},message statics {}!",
+                        new Object[] { pair.getFirst(), pair.getSecond() });
+            }
+        }
+
+        if (consumer != null) {
+            consumer.cleanup();
+        }
+    }
+
+    public void activate() {
+        consumer.resume();
+    }
+
+    public void deactivate() {
+        consumer.pause();
+    }
+
+    /**
+     * Just handle failure message here
+     * 
+     * @see backtype.storm.spout.ISpout#nextTuple()
+     */
+    public void nextTuple() {
+        Pair<MessageExt, MessageStat> pair = null;
+        try {
+            pair = failureQueue.take();
+        } catch (InterruptedException e) {
+            return;
+        }
+        if (pair == null) {
+            return;
+        }
+
+        pair.getSecond().updateEmitMs();
+        collector.emit(new Values(pair.getFirst(), pair.getSecond()), pair.getFirst().getMsgId());
+    }
+
+    public void ack(Object id) {
+        String msgId = (String) id;
+
+        failureMsgs.remove(msgId);
+    }
+
+    /**
+     * if there are a lot of failure case, the performance will be bad because
+     * consumer.viewMessage(msgId) isn't fast
+     * 
+     * @see backtype.storm.spout.ISpout#fail(Object)
+     */
+    public void fail(Object id) {
+        handleFailure((String) id);
+    }
+
+    private void handleFailure(String msgId) {
+        Pair<MessageExt, MessageStat> pair = failureMsgs.get(msgId);
+        if (pair == null) {
+            MessageExt msg;
+            try {
+                msg = consumer.getConsumer().viewMessage(msgId);
+            } catch (Exception e) {
+                LOG.error("Failed to get message " + msgId + " from broker!", e);
+                return;
+            }
+
+            MessageStat attribute = new MessageStat(config.getTopic());
+
+            pair = new Pair<MessageExt, MessageStat>(msg, attribute);
+
+            failureMsgs.put(msgId, pair);
+
+            failureQueue.offer(pair);
+            return;
+        } else {
+            int failureTime = pair.getSecond().getFailureTimes().incrementAndGet();
+            if (config.getMaxFailTimes() < 0 || failureTime < config.getMaxFailTimes()) {
+                failureQueue.offer(pair);
+                return;
+            } else {
+                LOG.info("Failure too many times, skip message {}!", pair.getFirst());
+                ack(msgId);
+                return;
+            }
+        }
+    }
+
+    public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs,
+                                                    ConsumeConcurrentlyContext context) {
+        try {
+            for (MessageExt msg : msgs) {
+                MessageStat msgStat = new MessageStat(config.getTopic());
+                collector.emit(new Values(msg, msgStat), msg.getMsgId());
+            }
+        } catch (Exception e) {
+            LOG.error("Failed to emit message {} in context {},caused by {}!", new Object[] { msgs,
+                    this.context.getThisTaskId(), e.getCause() });
+            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
+        }
+        return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
+    }
+
+    public void declareOutputFields(OutputFieldsDeclarer declarer) {
+        Fields fields = new Fields("MessageExt", "MessageStat");
+        declarer.declare(fields);
+    }
+
+    public Map<String, Object> getComponentConfiguration() {
+        return null;
+    }
+
+    public DefaultMQPushConsumer getConsumer() {
+        return consumer.getConsumer();
+    }
+
+}
