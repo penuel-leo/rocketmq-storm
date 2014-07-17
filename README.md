@@ -1,5 +1,4 @@
-
-Description
+## Description
 
 rocketmq-storm-alibaba allows a Storm topology to consume an RocketMQ queue as an input source. It currently provides:
 
@@ -10,10 +9,10 @@ BatchMessageSpout: as the name implies,It handle the messages in a batch way,als
 DefaultMessageSpout: based on batchMessageSpout,cache batch messages and emit message one by one.It is also recommendation spout at the present stage
 
 
-Documentation
+## Documentation
 Please look forward to!
 
-Usage
+## Usage
 To produce a jar:
 
 $ mvn clean install
@@ -24,7 +23,9 @@ cd target
 storm jar rocketmq-storm-1.0.0-SNAPSHOT-jar-with-dependencies.jar com.alibaba.storm.Topology
 
 
-Compatibility
+## Compatibility
 RocketMQ 3.x
+
 Jstorm 0.9.X
+
 Storm 0.9.x
