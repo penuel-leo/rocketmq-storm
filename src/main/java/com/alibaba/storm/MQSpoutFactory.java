@@ -1,20 +1,20 @@
 package com.alibaba.storm;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import org.apache.commons.lang.BooleanUtils;
+import org.apache.commons.lang.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import backtype.storm.Config;
 import backtype.storm.topology.IRichSpout;
 
-import com.alibaba.jstorm.utils.JStormUtils;
+import com.alibaba.storm.internal.tools.ConfigUtils;
 import com.alibaba.storm.mq.MQConfig;
 import com.alibaba.storm.spout.BatchMessageSpout;
 import com.alibaba.storm.spout.DefaultMessageSpout;
@@ -27,15 +27,12 @@ import com.google.common.collect.Maps;
 public class MQSpoutFactory {
     private static final Logger LOG = LoggerFactory.getLogger(MQSpoutFactory.class);
 
+    private MQSpoutFactory() {
+    }
+
     public static Config initConfig(String configFile) {
         Config config = new Config();
-        Properties prop = new Properties();
-        InputStream input = MQSpoutFactory.class.getClassLoader().getResourceAsStream(configFile);
-        try {
-            prop.load(input);
-        } catch (IOException e) {
-            LOG.warn("SpoutFactory Load Properties error", e);
-        }
+        Properties prop = ConfigUtils.getResource(configFile);
         for (Entry<Object, Object> entry : prop.entrySet()) {
             config.put((String) entry.getKey(), entry.getValue());
         }
@@ -44,11 +41,12 @@ public class MQSpoutFactory {
 
     public static Map<String, IRichSpout> createMqSpouts(Config conf) {
         Map<String, IRichSpout> mqSpouts = Maps.newHashMap();
-        String topic = (String) conf.get("mq.topic");
-        String consumerGroup = (String) conf.get("mq.consumer.group");
-        String subExpress = (String) conf.get("mq.subexpress");
-        int spoutType = JStormUtils.parseInt(conf.get("spout.type"), 2);
-        boolean ordered = JStormUtils.parseBoolean(conf.get("spout.ordered"), false);
+        String topic = (String) conf.get(ConfigUtils.CONFIG_TOPIC);
+        String consumerGroup = (String) conf.get(ConfigUtils.CONFIG_CONSUMER_GROUP);
+        String subExpress = (String) conf.get(ConfigUtils.CONFIG_TOPIC_TAG);
+        int spoutType = NumberUtils.toInt((String) conf.get("rocketmq.spout.type"), 2);
+        boolean ordered = BooleanUtils.toBooleanDefaultIfNull(
+                Boolean.valueOf((String) (conf.get("rocketmq.spout.ordered"))), false);
         MQConfig config = new MQConfig(consumerGroup, topic, subExpress);
         config.setOrdered(ordered);
 
