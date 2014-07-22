@@ -8,7 +8,7 @@ An simple implementation of backtype.storm.topology.IRichSpout,consumes the mess
 #### BatchMessageSpout: 
 As the name implies,It handle the messages in a batch way,also with supporting reliable messages;
 
-#### DefaultMessageSpout: 
+#### StreamMessageSpout: 
 Based on batchMessageSpout,cache batch messages and emit message one by one.It is also recommendation spout at the present stage
 
 #### AsyncMessageSpout: 
