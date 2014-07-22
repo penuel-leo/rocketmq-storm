@@ -1,4 +1,4 @@
-package com.alibaba.storm.mq;
+package com.alibaba.rocketmq.storm.domain;
 
 import java.util.TreeMap;
 

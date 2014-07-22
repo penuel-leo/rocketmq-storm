@@ -1,4 +1,4 @@
-package com.alibaba.storm.spout;
+package com.alibaba.rocketmq.storm.spout;
 
 import java.util.Map;
 import java.util.Queue;
@@ -23,19 +23,21 @@ import backtype.storm.utils.TimeCacheMap.ExpiredCallback;
 
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.message.MessageQueue;
-import com.alibaba.storm.mq.MQConfig;
-import com.alibaba.storm.mq.MessageCacheItem;
-import com.alibaba.storm.mq.MessageTuple;
+import com.alibaba.rocketmq.storm.annotation.Extension;
+import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
+import com.alibaba.rocketmq.storm.domain.MessageCacheItem;
+import com.alibaba.rocketmq.storm.domain.MessageTuple;
 import com.google.common.collect.Sets;
 
 /**
  * @author Von Gosling
  */
-public class DefaultMessageSpout extends BatchMessageSpout {
+@Extension("stream")
+public class StreamMessageSpout extends BatchMessageSpout {
     private static final long                      serialVersionUID = 464153253576782163L;
 
     private static final Logger                    LOG              = LoggerFactory
-                                                                            .getLogger(DefaultMessageSpout.class);
+                                                                            .getLogger(StreamMessageSpout.class);
 
     private final Queue<MessageCacheItem>          msgQueue         = new ConcurrentLinkedQueue<MessageCacheItem>();
     private TimeCacheMap<String, MessageCacheItem> msgCache;
@@ -44,11 +46,6 @@ public class DefaultMessageSpout extends BatchMessageSpout {
      * This field is used to check whether one batch is finish or not
      */
     private Map<UUID, BatchMsgsTag>                batchMsgsMap     = new ConcurrentHashMap<UUID, BatchMsgsTag>();
-
-    public DefaultMessageSpout(final MQConfig config) {
-        super(config);
-
-    }
 
     public void open(final Map conf, final TopologyContext context,
                      final SpoutOutputCollector collector) {

@@ -1,4 +1,4 @@
-package com.alibaba.storm.mq;
+package com.alibaba.rocketmq.storm.domain;
 
 import com.alibaba.rocketmq.common.message.MessageQueue;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -14,13 +14,12 @@ public class MessageStat implements Serializable {
     private static final long serialVersionUID = 1277714452693486955L;
 
     private MessageQueue      mq;
-    private String            topic;
 
     private AtomicInteger     failureTimes     = new AtomicInteger(0);
     private long              emitMs           = System.currentTimeMillis();
 
-    public MessageStat(String topic) {
-        this.topic = topic;
+    public MessageStat() {
+        super();
     }
 
     public MessageStat(MessageQueue mq) {

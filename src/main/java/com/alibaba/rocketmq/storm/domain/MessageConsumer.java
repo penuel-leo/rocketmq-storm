@@ -1,4 +1,4 @@
-package com.alibaba.storm.mq;
+package com.alibaba.rocketmq.storm.domain;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -24,11 +24,11 @@ public class MessageConsumer implements Serializable {
     private static final Logger               LOG              = LoggerFactory
                                                                        .getLogger(MessageConsumer.class);
 
-    protected final MQConfig                  config;
+    protected final RocketMQConfig            config;
 
     protected transient DefaultMQPushConsumer consumer;
 
-    public MessageConsumer(MQConfig config) {
+    public MessageConsumer(RocketMQConfig config) {
         this.config = config;
     }
 
@@ -39,7 +39,7 @@ public class MessageConsumer implements Serializable {
         consumer = new DefaultMQPushConsumer(config.getConsumerGroup());
         consumer.setInstanceName(instanceName);
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
-        consumer.subscribe(config.getTopic(), config.getSubExpress());
+        consumer.subscribe(config.getTopic(), config.getTopicTag());
         consumer.registerMessageListener(listener);
 
         consumer.setPullThresholdForQueue(config.getQueueSize());
@@ -51,11 +51,10 @@ public class MessageConsumer implements Serializable {
 
         if (config.getStartTimeStamp() != null) {
             Date date = new Date(config.getStartTimeStamp());
-            LOG.info("Begin to reset offset to " + date);
             MQHelper.resetOffsetByTimestamp(MessageModel.CLUSTERING, instanceName,
                     config.getConsumerGroup(), config.getTopic(), config.getStartTimeStamp());
 
-            LOG.info("Successfully reset offset to " + date);
+            LOG.info("Successfully reset offset to {}", date);
         }
 
         this.consumer.start();
@@ -70,7 +69,7 @@ public class MessageConsumer implements Serializable {
         LOG.info("Successfully shutdown consumer {}", config);
     }
 
-    public Set<MessageQueue> getAllPartitions() throws MQClientException {
+    public Set<MessageQueue> listAllQueues() throws MQClientException {
         if (consumer == null) {
             throw new MQClientException("Consumer isn't ready", new RuntimeException());
         }

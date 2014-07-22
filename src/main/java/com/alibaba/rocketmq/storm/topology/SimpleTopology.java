@@ -1,4 +1,4 @@
-package com.aliexpress.guestchat.storm;
+package com.alibaba.rocketmq.storm.topology;
 
 import org.apache.commons.lang.math.NumberUtils;
 import org.slf4j.Logger;
@@ -8,7 +8,6 @@ import backtype.storm.Config;
 import backtype.storm.StormSubmitter;
 import backtype.storm.generated.AlreadyAliveException;
 import backtype.storm.generated.InvalidTopologyException;
-import backtype.storm.generated.StormTopology;
 import backtype.storm.topology.BoltDeclarer;
 import backtype.storm.topology.TopologyBuilder;
 
@@ -20,17 +19,14 @@ import com.alibaba.rocketmq.storm.internal.tools.ConfigUtils;
 import com.alibaba.rocketmq.storm.spout.StreamMessageSpout;
 import com.alibaba.rocketmq.storm.spout.factory.RocketMQSpoutFactory;
 
-/**
- * @author Von Gosling 2014年6月30日 下午12:40:11
- */
-public class DemoTopology {
-    private static final Logger LOG            = LoggerFactory.getLogger(DemoTopology.class);
+public class SimpleTopology {
+    private static final Logger LOG            = LoggerFactory.getLogger(SimpleTopology.class);
 
-    private static final String BOLT_NAME      = "notifier";
-    private static final String PROP_FILE_NAME = "mqspout.test.prop";
+    private static final String BOLT_NAME      = "MQBolt";
+    private static final String PROP_FILE_NAME = "mqspout.default.prop";
 
-    private static Config       conf           = new Config();
-    private static boolean      isLocalMode    = true;
+    private static Config       config         = new Config();
+    private static boolean      isLocalMode    = false;
 
     public static void main(String[] args) throws Exception {
         TopologyBuilder builder = buildTopology(ConfigUtils.init(PROP_FILE_NAME));
@@ -61,22 +57,20 @@ public class DemoTopology {
 
     private static void submitTopology(TopologyBuilder builder) {
         try {
-            String topologyName = String.valueOf(conf.get("topology.name"));
-            StormTopology topology = builder.createTopology();
-
             if (isLocalMode == true) {
                 LocalCluster cluster = new LocalCluster();
-                conf.put(Config.STORM_CLUSTER_MODE, "local");
 
-                cluster.submitTopology(topologyName, conf, topology);
+                config.put(Config.STORM_CLUSTER_MODE, "local");
+                cluster.submitTopology(String.valueOf(config.get("topology.name")), config,
+                        builder.createTopology());
 
                 Thread.sleep(50000);
 
-                cluster.killTopology(topologyName);
                 cluster.shutdown();
             } else {
-                conf.put(Config.STORM_CLUSTER_MODE, "distributed");
-                StormSubmitter.submitTopology(topologyName, conf, topology);
+                config.put(Config.STORM_CLUSTER_MODE, "distributed");
+                StormSubmitter.submitTopology(String.valueOf(config.get("topology.name")), config,
+                        builder.createTopology());
             }
 
         } catch (AlreadyAliveException e) {

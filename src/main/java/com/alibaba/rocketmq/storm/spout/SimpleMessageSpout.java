@@ -1,4 +1,4 @@
-package com.alibaba.storm.spout;
+package com.alibaba.rocketmq.storm.spout;
 
 import java.util.List;
 import java.util.Map;
@@ -22,14 +22,16 @@ import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import com.alibaba.rocketmq.common.message.MessageExt;
-import com.alibaba.storm.mq.MQConfig;
-import com.alibaba.storm.mq.MessageConsumer;
-import com.alibaba.storm.mq.MessageStat;
+import com.alibaba.rocketmq.storm.annotation.Extension;
+import com.alibaba.rocketmq.storm.domain.MessageConsumer;
+import com.alibaba.rocketmq.storm.domain.MessageStat;
+import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
 import com.google.common.collect.MapMaker;
 
 /**
  * @author Von Gosling
  */
+@Extension("simple")
 public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrently {
     private static final long                            serialVersionUID = -2277714452693486954L;
 
@@ -44,9 +46,9 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
     private BlockingQueue<Pair<MessageExt, MessageStat>> failureQueue     = new LinkedBlockingQueue<Pair<MessageExt, MessageStat>>();
     private Map<String, Pair<MessageExt, MessageStat>>   failureMsgs;
 
-    private MQConfig                                     config;
+    private RocketMQConfig                               config;
 
-    public SimpleMessageSpout(MQConfig config) {
+    public void setConfig(RocketMQConfig config) {
         this.config = config;
     }
 
@@ -137,9 +139,9 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
                 return;
             }
 
-            MessageStat attribute = new MessageStat(config.getTopic());
+            MessageStat stat = new MessageStat();
 
-            pair = new Pair<MessageExt, MessageStat>(msg, attribute);
+            pair = new Pair<MessageExt, MessageStat>(msg, stat);
 
             failureMsgs.put(msgId, pair);
 
@@ -162,7 +164,7 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
                                                     ConsumeConcurrentlyContext context) {
         try {
             for (MessageExt msg : msgs) {
-                MessageStat msgStat = new MessageStat(config.getTopic());
+                MessageStat msgStat = new MessageStat();
                 collector.emit(new Values(msg, msgStat), msg.getMsgId());
             }
         } catch (Exception e) {

@@ -1,4 +1,14 @@
-package com.alibaba.storm.spout;
+package com.alibaba.rocketmq.storm.spout;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import backtype.storm.Config;
 import backtype.storm.spout.SpoutOutputCollector;
@@ -8,49 +18,44 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 
-import com.alibaba.rocketmq.client.consumer.listener.*;
-import com.alibaba.rocketmq.client.exception.MQClientException;
+import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
+import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
+import com.alibaba.rocketmq.client.consumer.listener.ConsumeOrderlyContext;
+import com.alibaba.rocketmq.client.consumer.listener.ConsumeOrderlyStatus;
+import com.alibaba.rocketmq.client.consumer.listener.MessageListener;
+import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
+import com.alibaba.rocketmq.client.consumer.listener.MessageListenerOrderly;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.message.MessageQueue;
-import com.alibaba.storm.mq.MQConfig;
-import com.alibaba.storm.mq.MessageConsumer;
-import com.alibaba.storm.mq.MessageTuple;
+import com.alibaba.rocketmq.storm.annotation.Extension;
+import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
+import com.alibaba.rocketmq.storm.domain.MessageConsumer;
+import com.alibaba.rocketmq.storm.domain.MessageTuple;
 import com.google.common.collect.MapMaker;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author Von Gosling
  */
+@Extension("batch")
 public class BatchMessageSpout implements IRichSpout {
     private static final long      serialVersionUID = 4641537253577312163L;
 
     private static final Logger    LOG              = LoggerFactory
                                                             .getLogger(BatchMessageSpout.class);
-    protected final MQConfig       config;
-
+    protected RocketMQConfig       config;
+   
     protected MessageConsumer      mqClient;
 
     protected String               topologyName;
 
     protected SpoutOutputCollector collector;
 
-    public BatchMessageSpout(final MQConfig config) {
-        super();
-        this.config = config;
-    }
-
     protected final BlockingQueue<MessageTuple> batchQueue = new LinkedBlockingQueue<MessageTuple>();
     protected Map<UUID, MessageTuple>           batchCache = new MapMaker().makeMap();
+    
+    public void setConfig(RocketMQConfig config) {
+        this.config = config;
+    }
 
     public void open(final Map conf, final TopologyContext context,
                      final SpoutOutputCollector collector) {
@@ -176,10 +181,6 @@ public class BatchMessageSpout implements IRichSpout {
 
     public BlockingQueue<MessageTuple> getBatchQueue() {
         return batchQueue;
-    }
-
-    public Set<MessageQueue> getAllPartitions() throws MQClientException {
-        return mqClient.getAllPartitions();
     }
 
     public MessageListener buildMessageListener() {

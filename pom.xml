@@ -59,6 +59,7 @@
 	</developers>
 
 	<dependencies>
+	<!--  
 		<dependency>
 			<groupId>org.apache.storm</groupId>
 			<artifactId>storm-core</artifactId>
@@ -75,6 +76,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+	-->
 		<dependency>
 			<groupId>org.jetbrains</groupId>
 			<artifactId>annotations</artifactId>
@@ -162,11 +164,6 @@
 			<version>${jmockit.version}</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>com.caucho</groupId>
-			<artifactId>hessian</artifactId>
-			<version>4.0.38</version>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -189,8 +186,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.1</version>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
 			<plugin>

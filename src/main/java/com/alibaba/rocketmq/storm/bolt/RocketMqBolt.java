@@ -1,4 +1,4 @@
-package com.alibaba.storm.bolt;
+package com.alibaba.rocketmq.storm.bolt;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -18,7 +18,7 @@ public class RocketMqBolt implements IRichBolt {
 
     private static final Logger LOG              = LoggerFactory.getLogger(RocketMqBolt.class);
 
-    protected OutputCollector   collector;
+    private OutputCollector     collector;
 
     @Override
     public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {

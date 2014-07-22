@@ -1,4 +1,4 @@
-package com.alibaba.storm.mq;
+package com.alibaba.rocketmq.storm.domain;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -9,7 +9,7 @@ import java.util.Properties;
 /**
  * @author Von Gosling
  */
-public class MQConfig implements Serializable {
+public class RocketMQConfig implements Serializable {
     private static final long serialVersionUID        = 4157424979688590880L;
 
     public static final int   DEFAULT_FAIL_TIME       = 5;
@@ -19,7 +19,7 @@ public class MQConfig implements Serializable {
 
     private final String      consumerGroup;
     private final String      topic;
-    private final String      subExpress;
+    private final String      topicTag;
 
     /**
      * consume strictly order, will affect performance
@@ -67,11 +67,11 @@ public class MQConfig implements Serializable {
 
     private Properties        peroperties;
 
-    public MQConfig(String consumerGroup, String topic, String subExpress) {
+    public RocketMQConfig(String consumerGroup, String topic, String topicTag) {
         super();
         this.consumerGroup = consumerGroup;
         this.topic = topic;
-        this.subExpress = subExpress;
+        this.topicTag = topicTag;
     }
 
     public boolean isOrdered() {
@@ -146,8 +146,8 @@ public class MQConfig implements Serializable {
         return topic;
     }
 
-    public String getSubExpress() {
-        return subExpress;
+    public String getTopicTag() {
+        return topicTag;
     }
 
     public int getPullThreadNum() {
