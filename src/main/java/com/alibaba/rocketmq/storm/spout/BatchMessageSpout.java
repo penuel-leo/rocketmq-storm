@@ -27,9 +27,9 @@ import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently
 import com.alibaba.rocketmq.client.consumer.listener.MessageListenerOrderly;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.message.MessageQueue;
+import com.alibaba.rocketmq.storm.MessageConsumer;
 import com.alibaba.rocketmq.storm.annotation.Extension;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
-import com.alibaba.rocketmq.storm.domain.MessageConsumer;
 import com.alibaba.rocketmq.storm.domain.MessageTuple;
 import com.google.common.collect.MapMaker;
 
@@ -38,21 +38,21 @@ import com.google.common.collect.MapMaker;
  */
 @Extension("batch")
 public class BatchMessageSpout implements IRichSpout {
-    private static final long      serialVersionUID = 4641537253577312163L;
+    private static final long                   serialVersionUID = 4641537253577312163L;
 
-    private static final Logger    LOG              = LoggerFactory
-                                                            .getLogger(BatchMessageSpout.class);
-    protected RocketMQConfig       config;
-   
-    protected MessageConsumer      mqClient;
+    private static final Logger                 LOG              = LoggerFactory
+                                                                         .getLogger(BatchMessageSpout.class);
+    protected RocketMQConfig                    config;
 
-    protected String               topologyName;
+    protected MessageConsumer                   mqClient;
 
-    protected SpoutOutputCollector collector;
+    protected String                            topologyName;
 
-    protected final BlockingQueue<MessageTuple> batchQueue = new LinkedBlockingQueue<MessageTuple>();
-    protected Map<UUID, MessageTuple>           batchCache = new MapMaker().makeMap();
-    
+    protected SpoutOutputCollector              collector;
+
+    protected final BlockingQueue<MessageTuple> batchQueue       = new LinkedBlockingQueue<MessageTuple>();
+    protected Map<UUID, MessageTuple>           batchCache       = new MapMaker().makeMap();
+
     public void setConfig(RocketMQConfig config) {
         this.config = config;
     }
@@ -62,13 +62,13 @@ public class BatchMessageSpout implements IRichSpout {
         this.collector = collector;
 
         this.topologyName = (String) conf.get(Config.TOPOLOGY_NAME);
-        int taskId = context.getThisTaskId();
 
         if (mqClient == null) {
             try {
+                config.setInstanceName(String.valueOf(context.getThisTaskId()));
                 mqClient = new MessageConsumer(config);
 
-                mqClient.init(buildMessageListener(), String.valueOf(taskId));
+                mqClient.start(buildMessageListener());
             } catch (Throwable e) {
                 LOG.error("Failed to init consumer!", e);
                 throw new RuntimeException(e);
@@ -164,7 +164,7 @@ public class BatchMessageSpout implements IRichSpout {
     }
 
     public void deactivate() {
-        mqClient.pause();
+        mqClient.suspend();
     }
 
     public void close() {
@@ -176,7 +176,7 @@ public class BatchMessageSpout implements IRichSpout {
             MessageTuple msgs = entry.getValue();
             msgs.fail();
         }
-        mqClient.cleanup();
+        mqClient.shutdown();
     }
 
     public BlockingQueue<MessageTuple> getBatchQueue() {

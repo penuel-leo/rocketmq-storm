@@ -22,8 +22,8 @@ import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import com.alibaba.rocketmq.common.message.MessageExt;
+import com.alibaba.rocketmq.storm.MessageConsumer;
 import com.alibaba.rocketmq.storm.annotation.Extension;
-import com.alibaba.rocketmq.storm.domain.MessageConsumer;
 import com.alibaba.rocketmq.storm.domain.MessageStat;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
 import com.google.common.collect.MapMaker;
@@ -58,11 +58,10 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
         this.failureMsgs = new MapMaker().makeMap();
         if (consumer == null) {
             try {
-                String instanceName = String.valueOf(context.getThisTaskId());
-
+                config.setInstanceName(String.valueOf(context.getThisTaskId()));
                 consumer = new MessageConsumer(config);
 
-                consumer.init(this, instanceName);
+                consumer.start(this);
             } catch (Exception e) {
                 LOG.error("Failed to init consumer!", e);
                 throw new RuntimeException(e);
@@ -80,7 +79,7 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
         }
 
         if (consumer != null) {
-            consumer.cleanup();
+            consumer.shutdown();
         }
     }
 
@@ -89,7 +88,7 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
     }
 
     public void deactivate() {
-        consumer.pause();
+        consumer.suspend();
     }
 
     /**

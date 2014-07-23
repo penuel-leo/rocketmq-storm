@@ -1,161 +1,264 @@
 package com.alibaba.rocketmq.storm.domain;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-
-import java.io.Serializable;
-import java.util.Properties;
 
 /**
  * @author Von Gosling
  */
 public class RocketMQConfig implements Serializable {
-    private static final long serialVersionUID        = 4157424979688590880L;
-
-    public static final int   DEFAULT_FAIL_TIME       = 5;
-    public static final int   DEFAULT_QUEUE_SIZE      = 1024;
-    public static final int   DEFAULT_BATCH_MSG_NUM   = 32;
-    public static final int   DEFAULT_PULL_THREAD_NUM = 4;
-
-    private final String      consumerGroup;
-    private final String      topic;
-    private final String      topicTag;
+    private static final long serialVersionUID              = 4157424979688590880L;
 
     /**
-     * consume strictly order, will affect performance
+     * Unique mark for every JVM instance
+     */
+    private String            instanceName;
+    /**
+     * Group by message actor
+     */
+    private String            groupId;
+    /*
+     * Message topic
+     */
+    private String            topic;
+    /**
+     * Message topic tag
+     */
+    private String            topicTag;
+    /**
+     * Minimal consumer thread count
+     */
+    private int               consumeThreadMin              = 20;
+    /**
+     * Maximal consumer thread count
+     */
+    private int               consumeThreadMax              = 64;
+    /**
+     * If piled-up message exceeds this value,adjust consumer thread to max
+     * value dynamically
+     */
+    private long              adjustThreadPoolNumsThreshold = 100000l;
+    /**
+     * Local message queue threshold, trigger flow control if exceeds this value
+     */
+    private int               pullThresholdForQueue         = 1024;
+    /**
+     * The message size from server for every pull batch
+     */
+    private int               pullBatchSize                 = 32;
+    /**
+     * Pull interval from server for every pull
+     */
+    private long              pullInterval                  = 0;
+    /**
+     * Fetch message size from local queue
+     */
+    private int               consumeMessageBatchMaxSize    = 32;
+    /**
+     * Consumption of local sequence, will affect performance
      */
     private boolean           ordered;
-
     /**
      * The max allowed failures for one single message, skip the failure message
      * if excesses
      * <p/>
      * -1 means try again until success
      */
-    private int               maxFailTimes            = DEFAULT_FAIL_TIME;
+    private int               maxFailTimes                  = 5;
 
-    /**
-     * Local messages threshold, trigger flow control if excesses
-     */
-    private int               queueSize               = DEFAULT_QUEUE_SIZE;
-
-    /**
-     * fetch messages size from local queue, default 1
-     */
-    private int               consumeBatchMsgNum      = DEFAULT_BATCH_MSG_NUM;
-
-    /**
-     * pull message size from server for every batch
-     */
-    private int               pullBatchMsgNum         = DEFAULT_BATCH_MSG_NUM;
-
-    /**
-     * pull interval(ms) from server for every batch
-     */
-    private long              pullInterval            = 0;
-
-    /**
-     * pull threads num
-     */
-    private int               pullThreadNum           = DEFAULT_PULL_THREAD_NUM;
-
-    /**
-     * Consumer start time Null means start from the last consumption
-     * time(CONSUME_FROM_LAST_OFFSET)
-     */
-    private Long              startTimeStamp;
-
-    private Properties        peroperties;
+    public RocketMQConfig() {
+    }
 
     public RocketMQConfig(String consumerGroup, String topic, String topicTag) {
         super();
-        this.consumerGroup = consumerGroup;
+        this.groupId = consumerGroup;
         this.topic = topic;
         this.topicTag = topicTag;
     }
 
-    public boolean isOrdered() {
-        return ordered;
+    /**
+     * @return the instanceName
+     */
+    public String getInstanceName() {
+        return instanceName;
     }
 
-    public void setOrdered(boolean ordered) {
-        this.ordered = ordered;
+    /**
+     * @param instanceName the instanceName to set
+     */
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
     }
 
-    public int getMaxFailTimes() {
-        return maxFailTimes;
+    /**
+     * @return the groupId
+     */
+    public String getGroupId() {
+        return groupId;
     }
 
-    public void setMaxFailTimes(int maxFailTimes) {
-        this.maxFailTimes = maxFailTimes;
+    /**
+     * @param groupId the groupId to set
+     */
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
 
-    public int getQueueSize() {
-        return queueSize;
-    }
-
-    public void setQueueSize(int queueSize) {
-        this.queueSize = queueSize;
-    }
-
-    public int getConsumeBatchMsgNum() {
-        return consumeBatchMsgNum;
-    }
-
-    public void setConsumeBatchMsgNum(int consumeBatchMsgNum) {
-        this.consumeBatchMsgNum = consumeBatchMsgNum;
-    }
-
-    public int getPullBatchMsgNum() {
-        return pullBatchMsgNum;
-    }
-
-    public void setPullBatchMsgNum(int pullBatchMsgNum) {
-        this.pullBatchMsgNum = pullBatchMsgNum;
-    }
-
-    public long getPullInterval() {
-        return pullInterval;
-    }
-
-    public void setPullInterval(long pullInterval) {
-        this.pullInterval = pullInterval;
-    }
-
-    public Long getStartTimeStamp() {
-        return startTimeStamp;
-    }
-
-    public void setStartTimeStamp(Long startTimeStamp) {
-        this.startTimeStamp = startTimeStamp;
-    }
-
-    public Properties getPeroperties() {
-        return peroperties;
-    }
-
-    public void setPeroperties(Properties peroperties) {
-        this.peroperties = peroperties;
-    }
-
-    public String getConsumerGroup() {
-        return consumerGroup;
-    }
-
+    /**
+     * @return the topic
+     */
     public String getTopic() {
         return topic;
     }
 
+    /**
+     * @param topic the topic to set
+     */
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    /**
+     * @return the topicTag
+     */
     public String getTopicTag() {
         return topicTag;
     }
 
-    public int getPullThreadNum() {
-        return pullThreadNum;
+    /**
+     * @param topicTag the topicTag to set
+     */
+    public void setTopicTag(String topicTag) {
+        this.topicTag = topicTag;
     }
 
-    public void setPullThreadNum(int pullThreadNum) {
-        this.pullThreadNum = pullThreadNum;
+    /**
+     * @return the consumeThreadMin
+     */
+    public int getConsumeThreadMin() {
+        return consumeThreadMin;
+    }
+
+    /**
+     * @param consumeThreadMin the consumeThreadMin to set
+     */
+    public void setConsumeThreadMin(int consumeThreadMin) {
+        this.consumeThreadMin = consumeThreadMin;
+    }
+
+    /**
+     * @return the consumeThreadMax
+     */
+    public int getConsumeThreadMax() {
+        return consumeThreadMax;
+    }
+
+    /**
+     * @param consumeThreadMax the consumeThreadMax to set
+     */
+    public void setConsumeThreadMax(int consumeThreadMax) {
+        this.consumeThreadMax = consumeThreadMax;
+    }
+
+    /**
+     * @return the adjustThreadPoolNumsThreshold
+     */
+    public long getAdjustThreadPoolNumsThreshold() {
+        return adjustThreadPoolNumsThreshold;
+    }
+
+    /**
+     * @param adjustThreadPoolNumsThreshold the adjustThreadPoolNumsThreshold to
+     *            set
+     */
+    public void setAdjustThreadPoolNumsThreshold(long adjustThreadPoolNumsThreshold) {
+        this.adjustThreadPoolNumsThreshold = adjustThreadPoolNumsThreshold;
+    }
+
+    /**
+     * @return the pullThresholdForQueue
+     */
+    public int getPullThresholdForQueue() {
+        return pullThresholdForQueue;
+    }
+
+    /**
+     * @param pullThresholdForQueue the pullThresholdForQueue to set
+     */
+    public void setPullThresholdForQueue(int pullThresholdForQueue) {
+        this.pullThresholdForQueue = pullThresholdForQueue;
+    }
+
+    /**
+     * @return the pullBatchSize
+     */
+    public int getPullBatchSize() {
+        return pullBatchSize;
+    }
+
+    /**
+     * @param pullBatchSize the pullBatchSize to set
+     */
+    public void setPullBatchSize(int pullBatchSize) {
+        this.pullBatchSize = pullBatchSize;
+    }
+
+    /**
+     * @return the pullInterval
+     */
+    public long getPullInterval() {
+        return pullInterval;
+    }
+
+    /**
+     * @param pullInterval the pullInterval to set
+     */
+    public void setPullInterval(long pullInterval) {
+        this.pullInterval = pullInterval;
+    }
+
+    /**
+     * @return the consumeMessageBatchMaxSize
+     */
+    public int getConsumeMessageBatchMaxSize() {
+        return consumeMessageBatchMaxSize;
+    }
+
+    /**
+     * @param consumeMessageBatchMaxSize the consumeMessageBatchMaxSize to set
+     */
+    public void setConsumeMessageBatchMaxSize(int consumeMessageBatchMaxSize) {
+        this.consumeMessageBatchMaxSize = consumeMessageBatchMaxSize;
+    }
+
+    /**
+     * @return the ordered
+     */
+    public boolean isOrdered() {
+        return ordered;
+    }
+
+    /**
+     * @param ordered the ordered to set
+     */
+    public void setOrdered(boolean ordered) {
+        this.ordered = ordered;
+    }
+
+    /**
+     * @return the maxFailTimes
+     */
+    public int getMaxFailTimes() {
+        return maxFailTimes;
+    }
+
+    /**
+     * @param maxFailTimes the maxFailTimes to set
+     */
+    public void setMaxFailTimes(int maxFailTimes) {
+        this.maxFailTimes = maxFailTimes;
     }
 
     @Override

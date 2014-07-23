@@ -1,4 +1,4 @@
-package com.aliexpress.guestchat.storm;
+package com.alibaba.rocketmq.storm;
 
 import org.apache.commons.lang.math.NumberUtils;
 import org.slf4j.Logger;

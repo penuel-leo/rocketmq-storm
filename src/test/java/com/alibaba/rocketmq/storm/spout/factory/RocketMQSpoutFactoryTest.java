@@ -1,16 +1,20 @@
 package com.alibaba.rocketmq.storm.spout.factory;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.isA;
+import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
-import com.alibaba.rocketmq.storm.domain.Spouts;
-
 import backtype.storm.topology.IRichSpout;
 
+import com.alibaba.rocketmq.storm.domain.Spouts;
+import com.alibaba.rocketmq.storm.spout.BatchMessageSpout;
+import com.alibaba.rocketmq.storm.spout.SimpleMessageSpout;
+import com.alibaba.rocketmq.storm.spout.StreamMessageSpout;
+
 /**
- * @author Von Gosling 2014年7月22日 上午10:11:23
+ * @author Von Gosling
  */
 public class RocketMQSpoutFactoryTest {
 
@@ -22,13 +26,13 @@ public class RocketMQSpoutFactoryTest {
     @Test
     public void getSpoutTest() throws Exception {
         IRichSpout richSpout = RocketMQSpoutFactory.getSpout(Spouts.SIMPLE.getValue());
-        assertThat(richSpout, isA(backtype.storm.topology.IRichSpout.class));
-        assertThat(richSpout, instanceOf(com.alibaba.rocketmq.storm.spout.SimpleMessageSpout.class));
+        assertThat(richSpout, isA(IRichSpout.class));
+        assertThat(richSpout, instanceOf(SimpleMessageSpout.class));
 
         richSpout = RocketMQSpoutFactory.getSpout(Spouts.BATCH.getValue());
-        assertThat(richSpout, instanceOf(com.alibaba.rocketmq.storm.spout.BatchMessageSpout.class));
+        assertThat(richSpout, instanceOf(BatchMessageSpout.class));
 
         richSpout = RocketMQSpoutFactory.getSpout(Spouts.STREAM.getValue());
-        assertThat(richSpout, instanceOf(com.alibaba.rocketmq.storm.spout.StreamMessageSpout.class));
+        assertThat(richSpout, instanceOf(StreamMessageSpout.class));
     }
 }

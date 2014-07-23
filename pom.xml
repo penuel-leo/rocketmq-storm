@@ -83,6 +83,11 @@
 			<version>13.0</version>
 		</dependency>
 		<dependency>
+			<groupId>cglib</groupId>
+			<artifactId>cglib-nodep</artifactId>
+			<version>3.1</version>
+		</dependency>
+		<dependency>
 			<groupId>com.alibaba.jstorm</groupId>
 			<artifactId>jstorm-client</artifactId>
 			<version>0.9.3.1</version>
@@ -216,7 +221,7 @@
 							<transformers>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>com.alibaba.storm.Topology</mainClass>
+									<mainClass>com.alibaba.rocketmq.storm.topology.SimpleTopology</mainClass>
 								</transformer>
 								<transformer
 									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
