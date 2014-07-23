@@ -19,7 +19,8 @@ Please look forward to!
 
 ## Code Snippet
 
-#### private static final String BOLT_NAME      = "notifier";
+#### 
+    private static final String BOLT_NAME      = "notifier";
     private static final String PROP_FILE_NAME = "mqspout.test.prop";
 
     private static Config       conf           = new Config();
