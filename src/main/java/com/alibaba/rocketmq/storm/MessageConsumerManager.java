@@ -8,6 +8,7 @@ import com.alibaba.rocketmq.client.consumer.DefaultMQPullConsumer;
 import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
 import com.alibaba.rocketmq.client.consumer.MQConsumer;
 import com.alibaba.rocketmq.client.consumer.listener.MessageListener;
+import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
 import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
@@ -15,7 +16,7 @@ import com.alibaba.rocketmq.storm.internal.tools.FastBeanUtils;
 import com.google.common.collect.Sets;
 
 /**
- * @author Von Gosling 2014年7月23日 下午1:18:24
+ * @author Von Gosling
  */
 public class MessageConsumerManager {
 
@@ -28,7 +29,7 @@ public class MessageConsumerManager {
     }
 
     public static MQConsumer getConsumerInstance(RocketMQConfig config, MessageListener listener,
-                                                 Boolean isPushlet) throws Exception {
+                                                 Boolean isPushlet) throws MQClientException {
         LOG.info("Begin to init consumer,instanceName->{},configuration->{}",
                 new Object[] { config.getInstanceName(), config });
 

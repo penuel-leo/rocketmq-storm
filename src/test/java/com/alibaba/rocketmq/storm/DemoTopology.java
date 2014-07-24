@@ -15,7 +15,7 @@ import backtype.storm.topology.TopologyBuilder;
 import com.alibaba.jstorm.local.LocalCluster;
 import com.alibaba.rocketmq.storm.bolt.RocketMqBolt;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
-import com.alibaba.rocketmq.storm.domain.Spouts;
+import com.alibaba.rocketmq.storm.domain.RocketMQSpouts;
 import com.alibaba.rocketmq.storm.internal.tools.ConfigUtils;
 import com.alibaba.rocketmq.storm.spout.StreamMessageSpout;
 import com.alibaba.rocketmq.storm.spout.factory.RocketMQSpoutFactory;
@@ -48,7 +48,7 @@ public class DemoTopology {
         BoltDeclarer writerBolt = builder.setBolt(BOLT_NAME, new RocketMqBolt(), boltParallel);
 
         StreamMessageSpout defaultSpout = (StreamMessageSpout) RocketMQSpoutFactory
-                .getSpout(Spouts.STREAM.getValue());
+                .getSpout(RocketMQSpouts.STREAM.getValue());
         RocketMQConfig mqConig = (RocketMQConfig) config.get(ConfigUtils.CONFIG_ROCKETMQ);
         defaultSpout.setConfig(mqConig);
 

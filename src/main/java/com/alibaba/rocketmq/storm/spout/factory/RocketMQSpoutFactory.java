@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import backtype.storm.topology.IRichSpout;
 
 import com.alibaba.rocketmq.storm.annotation.Extension;
-import com.alibaba.rocketmq.storm.domain.Spouts;
+import com.alibaba.rocketmq.storm.domain.RocketMQSpouts;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
@@ -23,10 +23,10 @@ public final class RocketMQSpoutFactory {
 
     private static Cache<String, IRichSpout> cache          = CacheBuilder.newBuilder().build();
 
-    private static final String              DEFAULT_BROKER = Spouts.STREAM.getValue();
+    private static final String              DEFAULT_BROKER = RocketMQSpouts.STREAM.getValue();
 
     public static IRichSpout getSpout(String spoutName) {
-        Spouts spoutType = Spouts.fromString(spoutName);
+        RocketMQSpouts spoutType = RocketMQSpouts.fromString(spoutName);
         switch (spoutType) {
             case SIMPLE:
             case BATCH:

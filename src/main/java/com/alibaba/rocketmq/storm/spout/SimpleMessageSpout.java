@@ -107,7 +107,7 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
             return;
         }
 
-        pair.getSecond().updateEmitMs();
+        pair.getSecond().setElapsedTime();
         collector.emit(new Values(pair.getFirst(), pair.getSecond()), pair.getFirst().getMsgId());
     }
 

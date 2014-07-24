@@ -8,7 +8,7 @@ import com.google.common.collect.Maps;
 /**
  * @author Von Gosling
  */
-public class CachedQueue {
+public class RocketMQCachedQueue {
 
     private final TreeMap<Long, MessageExt> msgCachedTable = Maps.newTreeMap();
 

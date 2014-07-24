@@ -29,8 +29,8 @@ import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.storm.MessageConsumer;
 import com.alibaba.rocketmq.storm.annotation.Extension;
+import com.alibaba.rocketmq.storm.domain.BatchMessage;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
-import com.alibaba.rocketmq.storm.domain.MessageTuple;
 import com.google.common.collect.MapMaker;
 
 /**
@@ -50,13 +50,14 @@ public class BatchMessageSpout implements IRichSpout {
 
     protected SpoutOutputCollector              collector;
 
-    protected final BlockingQueue<MessageTuple> batchQueue       = new LinkedBlockingQueue<MessageTuple>();
-    protected Map<UUID, MessageTuple>           batchCache       = new MapMaker().makeMap();
+    protected final BlockingQueue<BatchMessage> batchQueue       = new LinkedBlockingQueue<BatchMessage>();
+    protected Map<UUID, BatchMessage>           batchCache       = new MapMaker().makeMap();
 
     public void setConfig(RocketMQConfig config) {
         this.config = config;
     }
 
+    @SuppressWarnings("rawtypes")
     public void open(final Map conf, final TopologyContext context,
                      final SpoutOutputCollector collector) {
         this.collector = collector;
@@ -80,7 +81,7 @@ public class BatchMessageSpout implements IRichSpout {
     }
 
     public void nextTuple() {
-        MessageTuple msgs = null;
+        BatchMessage msgs = null;
         try {
             msgs = batchQueue.take();
         } catch (InterruptedException e) {
@@ -91,12 +92,12 @@ public class BatchMessageSpout implements IRichSpout {
         }
 
         UUID uuid = msgs.getBatchId();
-        collector.emit(new Values(msgs.getMsgList(), msgs.buildMsgAttribute()), uuid);
+        collector.emit(new Values(msgs.getMsgList()), uuid);
         return;
     }
 
-    public MessageTuple finish(UUID batchId) {
-        MessageTuple batchMsgs = batchCache.remove(batchId);
+    public BatchMessage finish(UUID batchId) {
+        BatchMessage batchMsgs = batchCache.remove(batchId);
         if (batchMsgs == null) {
             LOG.warn("Failed to get cached values {}!", batchId);
             return null;
@@ -117,15 +118,15 @@ public class BatchMessageSpout implements IRichSpout {
     }
 
     protected void handleFail(UUID batchId) {
-        MessageTuple msgs = batchCache.get(batchId);
+        BatchMessage msgs = batchCache.get(batchId);
         if (msgs == null) {
             LOG.warn("No MessageTuple entry of {}!", batchId);
             return;
         }
 
-        LOG.info("Fail to handle {}!", msgs.toSimpleString());
+        LOG.info("Fail to handle {}!", msgs);
 
-        int failureTimes = msgs.getFailureTimes().incrementAndGet();
+        int failureTimes = msgs.getMessageStat().getFailureTimes().incrementAndGet();
         if (config.getMaxFailTimes() < 0 || failureTimes < config.getMaxFailTimes()) {
             batchQueue.offer(msgs);
             return;
@@ -148,7 +149,7 @@ public class BatchMessageSpout implements IRichSpout {
     }
 
     public void declareOutputFields(final OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("MessageExtList", "MessageStat"));
+        declarer.declare(new Fields("MessageExtList"));
     }
 
     public boolean isDistributed() {
@@ -172,14 +173,14 @@ public class BatchMessageSpout implements IRichSpout {
     }
 
     public void cleanup() {
-        for (Entry<UUID, MessageTuple> entry : batchCache.entrySet()) {
-            MessageTuple msgs = entry.getValue();
+        for (Entry<UUID, BatchMessage> entry : batchCache.entrySet()) {
+            BatchMessage msgs = entry.getValue();
             msgs.fail();
         }
         mqClient.shutdown();
     }
 
-    public BlockingQueue<MessageTuple> getBatchQueue() {
+    public BlockingQueue<BatchMessage> getBatchQueue() {
         return batchQueue;
     }
 
@@ -225,7 +226,7 @@ public class BatchMessageSpout implements IRichSpout {
             return true;
         }
 
-        MessageTuple batchMsgs = new MessageTuple(msgs, mq);
+        BatchMessage batchMsgs = new BatchMessage(msgs, mq);
 
         batchCache.put(batchMsgs.getBatchId(), batchMsgs);
 

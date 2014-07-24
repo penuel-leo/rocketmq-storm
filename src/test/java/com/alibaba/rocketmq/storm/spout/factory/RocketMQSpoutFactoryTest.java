@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import backtype.storm.topology.IRichSpout;
 
-import com.alibaba.rocketmq.storm.domain.Spouts;
+import com.alibaba.rocketmq.storm.domain.RocketMQSpouts;
 import com.alibaba.rocketmq.storm.spout.BatchMessageSpout;
 import com.alibaba.rocketmq.storm.spout.SimpleMessageSpout;
 import com.alibaba.rocketmq.storm.spout.StreamMessageSpout;
@@ -25,14 +25,14 @@ public class RocketMQSpoutFactoryTest {
 
     @Test
     public void getSpoutTest() throws Exception {
-        IRichSpout richSpout = RocketMQSpoutFactory.getSpout(Spouts.SIMPLE.getValue());
+        IRichSpout richSpout = RocketMQSpoutFactory.getSpout(RocketMQSpouts.SIMPLE.getValue());
         assertThat(richSpout, isA(IRichSpout.class));
         assertThat(richSpout, instanceOf(SimpleMessageSpout.class));
 
-        richSpout = RocketMQSpoutFactory.getSpout(Spouts.BATCH.getValue());
+        richSpout = RocketMQSpoutFactory.getSpout(RocketMQSpouts.BATCH.getValue());
         assertThat(richSpout, instanceOf(BatchMessageSpout.class));
 
-        richSpout = RocketMQSpoutFactory.getSpout(Spouts.STREAM.getValue());
+        richSpout = RocketMQSpoutFactory.getSpout(RocketMQSpouts.STREAM.getValue());
         assertThat(richSpout, instanceOf(StreamMessageSpout.class));
     }
 }

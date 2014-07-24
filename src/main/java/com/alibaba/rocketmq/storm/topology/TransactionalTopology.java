@@ -12,6 +12,9 @@ import backtype.storm.generated.StormTopology;
 import backtype.storm.tuple.Fields;
 
 import com.alibaba.jstorm.local.LocalCluster;
+import com.alibaba.rocketmq.client.exception.MQClientException;
+import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
+import com.alibaba.rocketmq.storm.internal.tools.ConfigUtils;
 import com.alibaba.rocketmq.storm.trident.RocketMQTridentSpout;
 
 /**
@@ -19,11 +22,18 @@ import com.alibaba.rocketmq.storm.trident.RocketMQTridentSpout;
  */
 public class TransactionalTopology {
 
-    public static final Logger LOG = LoggerFactory.getLogger(TransactionalTopology.class);
+    public static final Logger  LOG            = LoggerFactory
+                                                       .getLogger(TransactionalTopology.class);
 
-    public static StormTopology buildTopology() {
+    private static final String PROP_FILE_NAME = "mqspout.default.prop";
+
+    public static StormTopology buildTopology() throws MQClientException {
         TridentTopology topology = new TridentTopology();
-        RocketMQTridentSpout spout = new RocketMQTridentSpout();
+
+        Config config = ConfigUtils.init(PROP_FILE_NAME);
+        RocketMQConfig rocketMQConfig = (RocketMQConfig) config.get(ConfigUtils.CONFIG_ROCKETMQ);
+
+        RocketMQTridentSpout spout = new RocketMQTridentSpout(rocketMQConfig);
         Stream stream = topology.newStream("rocketmq-txId", spout);
         stream.each(new Fields("message"), new BaseFilter() {
             private static final long serialVersionUID = -9056745088794551960L;

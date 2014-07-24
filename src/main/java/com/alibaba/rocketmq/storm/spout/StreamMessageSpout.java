@@ -22,11 +22,9 @@ import backtype.storm.utils.TimeCacheMap;
 import backtype.storm.utils.TimeCacheMap.ExpiredCallback;
 
 import com.alibaba.rocketmq.common.message.MessageExt;
-import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.storm.annotation.Extension;
-import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
+import com.alibaba.rocketmq.storm.domain.BatchMessage;
 import com.alibaba.rocketmq.storm.domain.MessageCacheItem;
-import com.alibaba.rocketmq.storm.domain.MessageTuple;
 import com.google.common.collect.Sets;
 
 /**
@@ -67,7 +65,7 @@ public class StreamMessageSpout extends BatchMessageSpout {
 
     public void prepareMsg() {
         while (true) {
-            MessageTuple msgTuple = null;
+            BatchMessage msgTuple = null;
             try {
                 msgTuple = super.getBatchQueue().poll(1, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
@@ -88,7 +86,7 @@ public class StreamMessageSpout extends BatchMessageSpout {
                 String msgId = msg.getMsgId();
                 msgIds.add(msgId);
                 MessageCacheItem item = new MessageCacheItem(msgTuple.getBatchId(), msg,
-                        msgTuple.buildMsgAttribute());
+                        msgTuple.getMessageStat());
                 msgCache.put(msgId, item);
                 msgQueue.offer(item);
             }
@@ -120,7 +118,7 @@ public class StreamMessageSpout extends BatchMessageSpout {
             return;
         }
 
-        UUID batchId = cacheItem.getBatchId();
+        UUID batchId = cacheItem.getId();
         BatchMsgsTag partTag = batchMsgsMap.get(batchId);
         if (partTag == null) {
             throw new RuntimeException("In partOffset map, no entry of " + batchId);
@@ -154,7 +152,7 @@ public class StreamMessageSpout extends BatchMessageSpout {
             return;
         }
 
-        LOG.info("Fail to handle {}!", cacheItem.toSimpleString());
+        LOG.info("Fail to handle {}!", cacheItem);
 
         int failTime = cacheItem.getMsgStat().getFailureTimes().incrementAndGet();
         if (config.getMaxFailTimes() < 0 || failTime < config.getMaxFailTimes()) {
@@ -178,24 +176,8 @@ public class StreamMessageSpout extends BatchMessageSpout {
         }
     }
 
-    public String getPartition(MessageExt msg) {
-        MessageCacheItem cacheItem = msgCache.get(msg.getMsgId());
-        if (cacheItem == null) {
-            LOG.error("Failed to get cache item {}!", msg.getProperties());
-            return null;
-        }
-
-        MessageQueue mq = cacheItem.getMsgStat().getMq();
-        if (mq == null) {
-            LOG.error("Failed to get cache item of {}!", msg.getProperties());
-            return null;
-        }
-        return mq.toString();
-
-    }
-
     public void declareOutputFields(final OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("MessageExt", "MessageStat"));
+        declarer.declare(new Fields("MessageExt"));
     }
 
     public static class BatchMsgsTag {

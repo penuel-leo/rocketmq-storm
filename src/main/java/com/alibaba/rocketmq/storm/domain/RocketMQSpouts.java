@@ -7,14 +7,14 @@ import com.google.common.collect.Maps;
 /**
  * @author Von Gosling
  */
-public enum Spouts {
+public enum RocketMQSpouts {
     SIMPLE("simple"),
     BATCH("batch"),
     STREAM("stream");
 
     private String value;
 
-    Spouts(String value) {
+    RocketMQSpouts(String value) {
         this.value = value;
     }
 
@@ -22,15 +22,15 @@ public enum Spouts {
         return this.value;
     }
 
-    private static Map<String, Spouts> stringToEnum = Maps.newHashMap();
+    private static Map<String, RocketMQSpouts> stringToEnum = Maps.newHashMap();
 
     static {
-        for (Spouts spout : values()) {
+        for (RocketMQSpouts spout : values()) {
             stringToEnum.put(spout.getValue(), spout);
         }
     }
 
-    public static Spouts fromString(String value) {
+    public static RocketMQSpouts fromString(String value) {
         return stringToEnum.get(value);
     }
 }

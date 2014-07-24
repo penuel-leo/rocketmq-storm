@@ -10,18 +10,18 @@ import java.util.UUID;
  * @author Von Gosling
  */
 public class MessageCacheItem {
-    private final UUID        batchId;
+    private final UUID        id;
     private final MessageExt  msg;
     private final MessageStat msgStat;
 
-    public MessageCacheItem(UUID batchId, MessageExt msg, MessageStat msgStat) {
-        this.batchId = batchId;
+    public MessageCacheItem(UUID id, MessageExt msg, MessageStat msgStat) {
+        this.id = id;
         this.msg = msg;
         this.msgStat = msgStat;
     }
 
-    public UUID getBatchId() {
-        return batchId;
+    public UUID getId() {
+        return id;
     }
 
     public MessageExt getMsg() {
@@ -37,12 +37,4 @@ public class MessageCacheItem {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 
-    public String toSimpleString() {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("MessageId:").append(msg.getMsgId());
-        sb.append(",msgStat:").append(msgStat);
-
-        return sb.toString();
-    }
 }

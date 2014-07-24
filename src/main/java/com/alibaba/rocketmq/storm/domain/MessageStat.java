@@ -1,11 +1,10 @@
 package com.alibaba.rocketmq.storm.domain;
 
-import com.alibaba.rocketmq.common.message.MessageQueue;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
  * @author Von Gosling
@@ -13,38 +12,27 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MessageStat implements Serializable {
     private static final long serialVersionUID = 1277714452693486955L;
 
-    private MessageQueue      mq;
-
     private AtomicInteger     failureTimes     = new AtomicInteger(0);
-    private long              emitMs           = System.currentTimeMillis();
+    private long              elapsedTime      = System.currentTimeMillis();
 
     public MessageStat() {
         super();
     }
 
-    public MessageStat(MessageQueue mq) {
-        this(mq, 0);
-    }
-
-    public MessageStat(MessageQueue mq, int failureTimes) {
-        this.mq = mq;
+    public MessageStat(int failureTimes) {
         this.failureTimes = new AtomicInteger(failureTimes);
     }
 
-    public void updateEmitMs() {
-        this.emitMs = System.currentTimeMillis();
-    }
-
-    public MessageQueue getMq() {
-        return mq;
+    public void setElapsedTime() {
+        this.elapsedTime = System.currentTimeMillis();
     }
 
     public AtomicInteger getFailureTimes() {
         return failureTimes;
     }
 
-    public long getEmitMs() {
-        return emitMs;
+    public long getElapsedTime() {
+        return elapsedTime;
     }
 
     @Override

@@ -11,12 +11,13 @@ import com.google.common.collect.MapMaker;
  * @author Von Gosling
  */
 public class RandomAsyncCommit {
-    private final ConcurrentMap<MessageQueue, CachedQueue> mqCachedTable = new MapMaker().makeMap();
+    private final ConcurrentMap<MessageQueue, RocketMQCachedQueue> mqCachedTable = new MapMaker()
+                                                                                         .makeMap();
 
     public void putMessages(final MessageQueue mq, final List<MessageExt> msgs) {
-        CachedQueue cachedQueue = this.mqCachedTable.get(mq);
+        RocketMQCachedQueue cachedQueue = this.mqCachedTable.get(mq);
         if (null == cachedQueue) {
-            cachedQueue = new CachedQueue();
+            cachedQueue = new RocketMQCachedQueue();
             this.mqCachedTable.put(mq, cachedQueue);
         }
         for (MessageExt msg : msgs) {
@@ -25,18 +26,19 @@ public class RandomAsyncCommit {
     }
 
     public void removeMessage(final MessageQueue mq, long offset) {
-        CachedQueue cachedQueue = this.mqCachedTable.get(mq);
+        RocketMQCachedQueue cachedQueue = this.mqCachedTable.get(mq);
         if (null != cachedQueue) {
             cachedQueue.getMsgCachedTable().remove(offset);
         }
     }
 
     public long commitableOffset(final MessageQueue mq) {
-        CachedQueue cachedQueue = this.mqCachedTable.get(mq);
+        RocketMQCachedQueue cachedQueue = this.mqCachedTable.get(mq);
         if (null != cachedQueue) {
             return cachedQueue.getMsgCachedTable().firstKey();
         }
 
         return -1;
     }
+
 }

@@ -5,6 +5,7 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,8 @@ public class RocketMqBolt implements IRichBolt {
     private OutputCollector     collector;
 
     @Override
-    public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
+    public void prepare(@SuppressWarnings("rawtypes") Map stormConf, TopologyContext context,
+                        OutputCollector collector) {
         this.collector = collector;
     }
 
