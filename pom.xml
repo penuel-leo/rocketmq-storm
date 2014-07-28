@@ -85,6 +85,7 @@
 			<artifactId>cglib-nodep</artifactId>
 			<version>3.1</version>
 		</dependency>
+	<!-- 
 		<dependency>
 			<groupId>com.alibaba.jstorm</groupId>
 			<artifactId>jstorm-client</artifactId>
@@ -97,7 +98,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!--  
 		<dependency>
 			<groupId>com.alibaba.jstorm</groupId>
 			<artifactId>jstorm-client-extension</artifactId>
