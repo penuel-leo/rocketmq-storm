@@ -16,11 +16,11 @@ import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 
-import com.alibaba.jstorm.utils.Pair;
 import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
+import com.alibaba.rocketmq.common.Pair;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.storm.MessageConsumer;
 import com.alibaba.rocketmq.storm.annotation.Extension;
@@ -74,7 +74,7 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
             for (Entry<String, Pair<MessageExt, MessageStat>> entry : failureMsgs.entrySet()) {
                 Pair<MessageExt, MessageStat> pair = entry.getValue();
                 LOG.warn("Failed to handle message {},message statics {}!",
-                        new Object[] { pair.getFirst(), pair.getSecond() });
+                        new Object[] { pair.getObject1(), pair.getObject2() });
             }
         }
 
@@ -107,8 +107,8 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
             return;
         }
 
-        pair.getSecond().setElapsedTime();
-        collector.emit(new Values(pair.getFirst(), pair.getSecond()), pair.getFirst().getMsgId());
+        pair.getObject2().setElapsedTime();
+        collector.emit(new Values(pair.getObject1(), pair.getObject2()), pair.getObject1().getMsgId());
     }
 
     public void ack(Object id) {
@@ -147,12 +147,12 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
             failureQueue.offer(pair);
             return;
         } else {
-            int failureTime = pair.getSecond().getFailureTimes().incrementAndGet();
+            int failureTime = pair.getObject2().getFailureTimes().incrementAndGet();
             if (config.getMaxFailTimes() < 0 || failureTime < config.getMaxFailTimes()) {
                 failureQueue.offer(pair);
                 return;
             } else {
-                LOG.info("Failure too many times, skip message {}!", pair.getFirst());
+                LOG.info("Failure too many times, skip message {}!", pair.getObject1());
                 ack(msgId);
                 return;
             }

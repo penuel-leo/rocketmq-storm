@@ -8,10 +8,10 @@ import storm.trident.TridentTopology;
 import storm.trident.operation.BaseFilter;
 import storm.trident.tuple.TridentTuple;
 import backtype.storm.Config;
+import backtype.storm.LocalCluster;
 import backtype.storm.generated.StormTopology;
 import backtype.storm.tuple.Fields;
 
-import com.alibaba.jstorm.local.LocalCluster;
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
 import com.alibaba.rocketmq.storm.internal.tools.ConfigUtils;
@@ -30,21 +30,21 @@ public class TransactionalTopology {
     public static StormTopology buildTopology() throws MQClientException {
         TridentTopology topology = new TridentTopology();
 
-        Config config = ConfigUtils.init(PROP_FILE_NAME);
-        RocketMQConfig rocketMQConfig = (RocketMQConfig) config.get(ConfigUtils.CONFIG_ROCKETMQ);
-
-        RocketMQTridentSpout spout = new RocketMQTridentSpout(rocketMQConfig);
-        Stream stream = topology.newStream("rocketmq-txId", spout);
-        stream.each(new Fields("message"), new BaseFilter() {
-            private static final long serialVersionUID = -9056745088794551960L;
-
-            @Override
-            public boolean isKeep(TridentTuple tuple) {
-                LOG.debug("Entering filter...");
-                return true;
-            }
-
-        });
+//        Config config = ConfigUtils.init(PROP_FILE_NAME);
+//        RocketMQConfig rocketMQConfig = (RocketMQConfig) config.get(ConfigUtils.CONFIG_ROCKETMQ);
+//
+//        RocketMQTridentSpout spout = new RocketMQTridentSpout(rocketMQConfig);
+//        Stream stream = topology.newStream("rocketmq-txId", spout);
+//        stream.each(new Fields("message"), new BaseFilter() {
+//            private static final long serialVersionUID = -9056745088794551960L;
+//
+//            @Override
+//            public boolean isKeep(TridentTuple tuple) {
+//                LOG.debug("Entering filter...");
+//                return true;
+//            }
+//
+//        });
         return topology.build();
     }
 

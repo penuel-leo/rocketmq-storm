@@ -59,7 +59,6 @@
 	</developers>
 
 	<dependencies>
-	<!--  
 		<dependency>
 			<groupId>org.apache.storm</groupId>
 			<artifactId>storm-core</artifactId>
@@ -76,7 +75,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-	-->
 		<dependency>
 			<groupId>org.jetbrains</groupId>
 			<artifactId>annotations</artifactId>
@@ -99,6 +97,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!--  
 		<dependency>
 			<groupId>com.alibaba.jstorm</groupId>
 			<artifactId>jstorm-client-extension</artifactId>
@@ -123,6 +122,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>com.alibaba.rocketmq</groupId>
 			<artifactId>rocketmq-client</artifactId>

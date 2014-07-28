@@ -31,7 +31,7 @@ import com.google.common.collect.MapMaker;
 /**
  * @author Von Gosling
  */
-public class RocketMQTridentSpout implements IPartitionedTridentSpout<BatchMessage> {
+public class RocketMQTridentSpout {/*implements IPartitionedTridentSpout<BatchMessage> {
     private static final long                                      serialVersionUID   = -2912595422083263970L;
     private static final Logger                                    LOG                = LoggerFactory
                                                                                               .getLogger(RocketMQTridentSpout.class);
@@ -52,20 +52,17 @@ public class RocketMQTridentSpout implements IPartitionedTridentSpout<BatchMessa
         consumer.start();
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public IPartitionedTridentSpout.Coordinator getCoordinator(Map conf, TopologyContext context) {
         return new Coordinator(consumer);
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public IPartitionedTridentSpout.Emitter<BatchMessage> getEmitter(Map conf,
                                                                      TopologyContext context) {
         return new Emitter(consumer);
     }
 
-    @SuppressWarnings("rawtypes")
     @Override
     public Map getComponentConfiguration() {
         return null;
@@ -186,5 +183,5 @@ public class RocketMQTridentSpout implements IPartitionedTridentSpout<BatchMessa
 
         }
         return cachedQueue;
-    }
+    }*/
 }
