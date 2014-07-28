@@ -1,3 +1,5 @@
+# rocketmq-storm-alibaba [![Build Status](https://travis-ci.org/rocketmq/rocketmq-storm-alibaba.png)](https://travis-ci.org/rocketmq/rocketmq-storm-alibaba)
+
 ## Description
 
 rocketmq-storm-alibaba allows a Storm topology to consume an RocketMQ queue as an input source. It currently provides:
