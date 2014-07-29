@@ -42,6 +42,7 @@ public class MessageConsumerManager {
             pushConsumer.subscribe(config.getTopic(), config.getTopicTag());
             pushConsumer.setMessageModel(MessageModel.CLUSTERING);
             pushConsumer.registerMessageListener(listener);
+            //pushConsumer.setNamesrvAddr(null);
             return pushConsumer;
         } else {
             pullConsumer = (DefaultMQPullConsumer) FastBeanUtils.copyProperties(config,
@@ -49,6 +50,7 @@ public class MessageConsumerManager {
             pullConsumer.setConsumerGroup(config.getGroupId());
             pullConsumer.setMessageModel(MessageModel.CLUSTERING);
             pullConsumer.setRegisterTopics(Sets.newHashSet(config.getTopic()));
+            //pullConsumer.setNamesrvAddr(null);
             return pullConsumer;
         }
     }

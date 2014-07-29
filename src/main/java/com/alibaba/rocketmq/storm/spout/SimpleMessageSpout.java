@@ -52,7 +52,8 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
         this.config = config;
     }
 
-    public void open(Map conf, TopologyContext context, SpoutOutputCollector collector) {
+    public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context,
+                     SpoutOutputCollector collector) {
         this.collector = collector;
         this.context = context;
         this.failureMsgs = new MapMaker().makeMap();
@@ -108,7 +109,8 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
         }
 
         pair.getObject2().setElapsedTime();
-        collector.emit(new Values(pair.getObject1(), pair.getObject2()), pair.getObject1().getMsgId());
+        collector.emit(new Values(pair.getObject1(), pair.getObject2()), pair.getObject1()
+                .getMsgId());
     }
 
     public void ack(Object id) {

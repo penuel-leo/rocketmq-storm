@@ -23,8 +23,8 @@ import com.alibaba.rocketmq.storm.spout.factory.RocketMQSpoutFactory;
 /**
  * @author Von Gosling 2014年6月30日 下午12:40:11
  */
-public class DemoTopology {
-    private static final Logger LOG            = LoggerFactory.getLogger(DemoTopology.class);
+public class SimpleTopologyDemo {
+    private static final Logger LOG            = LoggerFactory.getLogger(SimpleTopologyDemo.class);
 
     private static final String BOLT_NAME      = "notifier";
     private static final String PROP_FILE_NAME = "mqspout.test.prop";

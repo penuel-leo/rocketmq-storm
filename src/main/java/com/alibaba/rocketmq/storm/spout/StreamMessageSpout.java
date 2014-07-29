@@ -18,8 +18,8 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
-import backtype.storm.utils.TimeCacheMap;
-import backtype.storm.utils.TimeCacheMap.ExpiredCallback;
+import backtype.storm.utils.RotatingMap;
+import backtype.storm.utils.RotatingMap.ExpiredCallback;
 
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.storm.annotation.Extension;
@@ -32,23 +32,22 @@ import com.google.common.collect.Sets;
  */
 @Extension("stream")
 public class StreamMessageSpout extends BatchMessageSpout {
-    private static final long                      serialVersionUID = 464153253576782163L;
+    private static final long                     serialVersionUID = 464153253576782163L;
 
-    private static final Logger                    LOG              = LoggerFactory
-                                                                            .getLogger(StreamMessageSpout.class);
+    private static final Logger                   LOG              = LoggerFactory
+                                                                           .getLogger(StreamMessageSpout.class);
 
-    private final Queue<MessageCacheItem>          msgQueue         = new ConcurrentLinkedQueue<MessageCacheItem>();
-    private TimeCacheMap<String, MessageCacheItem> msgCache;
+    private final Queue<MessageCacheItem>         msgQueue         = new ConcurrentLinkedQueue<MessageCacheItem>();
+    private RotatingMap<String, MessageCacheItem> msgCache;
 
     /**
      * This field is used to check whether one batch is finish or not
      */
-    private Map<UUID, BatchMsgsTag>                batchMsgsMap     = new ConcurrentHashMap<UUID, BatchMsgsTag>();
+    private Map<UUID, BatchMsgsTag>               batchMsgsMap     = new ConcurrentHashMap<UUID, BatchMsgsTag>();
 
-    public void open(final Map conf, final TopologyContext context,
+    public void open(@SuppressWarnings("rawtypes") final Map conf, final TopologyContext context,
                      final SpoutOutputCollector collector) {
         super.open(conf, context, collector);
-        //FIXME Using CacheBuilder 
         ExpiredCallback<String, MessageCacheItem> callback = new ExpiredCallback<String, MessageCacheItem>() {
             public void expire(String key, MessageCacheItem val) {
                 LOG.warn("Long time no ack,key is {},value is {}", key, val);
@@ -57,7 +56,7 @@ public class StreamMessageSpout extends BatchMessageSpout {
             }
 
         };
-        msgCache = new TimeCacheMap<String, MessageCacheItem>(3600 * 5, callback);
+        msgCache = new RotatingMap<String, MessageCacheItem>(3600 * 5, callback);
 
         LOG.info("Topology {} opened {} spout successfully!",
                 new Object[] { topologyName, config.getTopic() });

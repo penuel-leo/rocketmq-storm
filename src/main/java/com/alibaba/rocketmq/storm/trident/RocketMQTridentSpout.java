@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import storm.trident.operation.TridentCollector;
 import storm.trident.spout.IPartitionedTridentSpout;
+import storm.trident.spout.ISpoutPartition;
 import storm.trident.topology.TransactionAttempt;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.tuple.Fields;
@@ -31,8 +32,11 @@ import com.google.common.collect.MapMaker;
 /**
  * @author Von Gosling
  */
-public class RocketMQTridentSpout {/*implements IPartitionedTridentSpout<BatchMessage> {
-    private static final long                                      serialVersionUID   = -2912595422083263970L;
+public class RocketMQTridentSpout implements
+        IPartitionedTridentSpout<List<MessageQueue>, ISpoutPartition, BatchMessage> {
+
+    private static final long                                      serialVersionUID   = 8972193358178718167L;
+
     private static final Logger                                    LOG                = LoggerFactory
                                                                                               .getLogger(RocketMQTridentSpout.class);
 
@@ -52,44 +56,29 @@ public class RocketMQTridentSpout {/*implements IPartitionedTridentSpout<BatchMe
         consumer.start();
     }
 
-    @Override
-    public IPartitionedTridentSpout.Coordinator getCoordinator(Map conf, TopologyContext context) {
-        return new Coordinator(consumer);
-    }
+    private List<MessageQueue> getMessageQueue(String topic) throws MQClientException {
+        List<MessageQueue> cachedQueue = Lists.newArrayList();
+        cachedQueue = cachedMessageQueue.get(config.getTopic());
+        if (cachedQueue == null) {
+            Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(config.getTopic());
+            cachedQueue = Lists.newArrayList(mqs);
+            cachedMessageQueue.put(config.getTopic(), cachedQueue);
 
-    @Override
-    public IPartitionedTridentSpout.Emitter<BatchMessage> getEmitter(Map conf,
-                                                                     TopologyContext context) {
-        return new Emitter(consumer);
-    }
-
-    @Override
-    public Map getComponentConfiguration() {
-        return null;
-    }
-
-    @Override
-    public Fields getOutputFields() {
-        return new Fields("tId", "MessageExt");
-    }
-
-    class Coordinator implements IPartitionedTridentSpout.Coordinator {
-
-        DefaultMQPullConsumer consumer;
-
-        public Coordinator(DefaultMQPullConsumer consumer) {
-            this.consumer = consumer;
         }
+        return cachedQueue;
+    }
+
+    class RocketMQCoordinator implements Coordinator<List<MessageQueue>> {
 
         @Override
-        public long numPartitions() {
+        public List<MessageQueue> getPartitionsForBatch() {
             List<MessageQueue> queue = Lists.newArrayList();
             try {
                 queue = getMessageQueue(config.getTopic());
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return queue.size();
+            return queue;
         }
 
         @Override
@@ -104,17 +93,26 @@ public class RocketMQTridentSpout {/*implements IPartitionedTridentSpout<BatchMe
 
     }
 
-    class Emitter implements IPartitionedTridentSpout.Emitter<BatchMessage> {
+    class RocketMQEmitter implements Emitter<List<MessageQueue>, ISpoutPartition, BatchMessage> {
 
-        DefaultMQPullConsumer consumer;
-
-        public Emitter(DefaultMQPullConsumer consumer) {
-            this.consumer = consumer;
+        @Override
+        public List<ISpoutPartition> getOrderedPartitions(List<MessageQueue> allPartitionInfo) {
+            List<ISpoutPartition> partition = Lists.newArrayList();
+            for (final MessageQueue queue : allPartitionInfo) {
+                partition.add(new ISpoutPartition() {
+                    @Override
+                    public String getId() {
+                        return String.valueOf(queue.getQueueId());
+                    }
+                });
+            }
+            return partition;
         }
 
         @Override
         public BatchMessage emitPartitionBatchNew(TransactionAttempt tx,
-                                                  TridentCollector collector, int partition,
+                                                  TridentCollector collector,
+                                                  ISpoutPartition partition,
                                                   BatchMessage lastPartitionMeta) {
             long index = 0;
             BatchMessage batchMessages = null;
@@ -127,7 +125,7 @@ public class RocketMQTridentSpout {/*implements IPartitionedTridentSpout<BatchMe
                     index = lastPartitionMeta.getNextOffset();
                 }
 
-                mq = getMessageQueue(config.getTopic()).get(partition);
+                mq = getMessageQueue(config.getTopic()).get(Integer.parseInt(partition.getId()));
 
                 PullResult result = consumer.pullBlockIfNotFound(mq, config.getTopicTag(), index,
                         32);
@@ -147,11 +145,17 @@ public class RocketMQTridentSpout {/*implements IPartitionedTridentSpout<BatchMe
         }
 
         @Override
+        public void refreshPartitions(List<ISpoutPartition> partitionResponsibilities) {
+
+        }
+
+        @Override
         public void emitPartitionBatch(TransactionAttempt tx, TridentCollector collector,
-                                       int partition, BatchMessage partitionMeta) {
+                                       ISpoutPartition partition, BatchMessage partitionMeta) {
+
             MessageQueue mq = null;
             try {
-                mq = getMessageQueue(config.getTopic()).get(partition);
+                mq = getMessageQueue(config.getTopic()).get(Integer.parseInt(partition.getId()));
 
                 PullResult result = consumer.pullBlockIfNotFound(mq, config.getTopicTag(),
                         partitionMeta.getOffset(), partitionMeta.getMsgList().size());
@@ -165,23 +169,37 @@ public class RocketMQTridentSpout {/*implements IPartitionedTridentSpout<BatchMe
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
         }
 
         @Override
         public void close() {
-
+            LOG.info("close emitter!");
         }
+
     }
 
-    private List<MessageQueue> getMessageQueue(String topic) throws MQClientException {
-        List<MessageQueue> cachedQueue = Lists.newArrayList();
-        cachedQueue = cachedMessageQueue.get(config.getTopic());
-        if (cachedQueue == null) {
-            Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(config.getTopic());
-            cachedQueue = Lists.newArrayList(mqs);
-            cachedMessageQueue.put(config.getTopic(), cachedQueue);
+    @Override
+    public Coordinator<List<MessageQueue>> getCoordinator(@SuppressWarnings("rawtypes") Map conf,
+                                                          TopologyContext context) {
+        return new RocketMQCoordinator();
+    }
 
-        }
-        return cachedQueue;
-    }*/
+    @Override
+    public Emitter<List<MessageQueue>, ISpoutPartition, BatchMessage> getEmitter(@SuppressWarnings("rawtypes") Map conf,
+                                                                                 TopologyContext context) {
+        return new RocketMQEmitter();
+    }
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public Map getComponentConfiguration() {
+        return null;
+    }
+
+    @Override
+    public Fields getOutputFields() {
+        return new Fields("tId", "message");
+    }
+
 }

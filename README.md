@@ -14,7 +14,7 @@ As the name implies,It handle the messages in a batch way,also with supporting r
 Based on batchMessageSpout,cache batch messages and emit message one by one.It is also recommendation spout at the present stage
 
 #### RocketMQTridentSpout: 
-Based on latest trident api
+Based on latest trident api,but not compatible with jstorm now!
 
 ## Documentation
 Please look forward to!
