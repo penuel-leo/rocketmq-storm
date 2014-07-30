@@ -93,7 +93,7 @@ $ mvn clean install
 
 Run it
 
-$storm jar rocketmq-storm-1.0.0-SNAPSHOT-jar-with-dependencies.jar com.alibaba.storm.Topology
+$storm jar rocketmq-storm-1.0.0-SNAPSHOT-jar-with-dependencies.jar com.alibaba.rocketmq.storm.topology.SimpleTopology
 
 
 ## Compatibility
