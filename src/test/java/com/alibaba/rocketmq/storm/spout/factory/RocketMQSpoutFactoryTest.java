@@ -1,7 +1,7 @@
 package com.alibaba.rocketmq.storm.spout.factory;
 
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.isA;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.core.Is.isA;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
