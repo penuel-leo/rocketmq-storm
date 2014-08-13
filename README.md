@@ -1,4 +1,4 @@
-# rocketmq-storm-alibaba [![Build Status](https://travis-ci.org/RocketMQ-Community/rocketmq-storm-alibaba.svg?branch=master)](https://travis-ci.org/RocketMQ-Community/rocketmq-storm-alibaba)
+# rocketmq-storm-alibaba [![Build Status](https://travis-ci.org/rocketmq/rocketmq-storm-alibaba.svg?branch=master)](https://travis-ci.org/rocketmq/rocketmq-storm-alibaba)
 
 ## Description
 
@@ -93,7 +93,7 @@ $ mvn clean install
 
 Run it
 
-$storm jar rocketmq-storm-1.0.0-SNAPSHOT-jar-with-dependencies.jar com.alibaba.storm.Topology
+$storm jar rocketmq-storm-1.0.0-SNAPSHOT-jar-with-dependencies.jar com.alibaba.rocketmq.storm.topology.SimpleTopology
 
 
 ## Compatibility
