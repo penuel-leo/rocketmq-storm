@@ -19,7 +19,7 @@ Based on latest trident api,but not compatible with jstorm now!
 ## Documentation
 Please look forward to!
 
-## Code Snippet
+## Code Snippet,see [here](https://github.com/rocketmq/rocketmq-storm-alibaba/blob/master/src/main/java/com/alibaba/rocketmq/storm/topology/SimpleTopology.java)
 
 #### 
     private static final String BOLT_NAME      = "notifier";
@@ -93,7 +93,7 @@ $ mvn clean install
 
 Run it
 
-$storm jar rocketmq-storm-1.0.0-SNAPSHOT-jar-with-dependencies.jar com.alibaba.rocketmq.storm.topology.SimpleTopology
+$cd target && storm jar rocketmq-storm-1.0.0-SNAPSHOT-jar-with-dependencies.jar com.alibaba.rocketmq.storm.topology.SimpleTopology
 
 
 ## Compatibility
