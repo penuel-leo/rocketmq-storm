@@ -10,7 +10,6 @@ import com.google.common.base.Preconditions;
  * High performance JavaBean attribute copy tool
  * 
  * @author von gosling 2011-12-24 3:58:02
- * @see org.springframework.beans.BeanUtils
  */
 public abstract class FastBeanUtils {
     public static Object copyProperties(Object source, Class<?> target) {
