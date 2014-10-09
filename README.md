@@ -1,4 +1,4 @@
-# rocketmq-storm-alibaba [![Build Status](https://travis-ci.org/rocketmq/rocketmq-storm-alibaba.svg?branch=master)](https://travis-ci.org/rocketmq/rocketmq-storm-alibaba)
+# rocketmq-storm-alibaba [![Build Status](https://travis-ci.org/rocketmq/rocketmq-storm.svg?branch=master)](https://travis-ci.org/rocketmq/rocketmq-storm)
 
 ## Description
 
