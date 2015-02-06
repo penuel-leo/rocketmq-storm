@@ -5,16 +5,16 @@
 rocketmq-storm allows a Storm topology to consume an RocketMQ queue as an input source. It currently provides:
 
 #### SimpleMessageSpout: 
-An simple implementation of backtype.storm.topology.IRichSpout,consumes the messages one by one.full features spout implementation exception flow control function;
+An simple implementation of backtype.storm.topology.IRichSpout,consumes the messages one by one.full features spout implementation exception flow control function.
 
 #### BatchMessageSpout: 
-As the name implies,It handle the messages in a batch way,also with supporting reliable messages;
+As the name implies,It handle the messages in a batch way,also with supporting reliable messages.
 
 #### StreamMessageSpout: 
-Based on batchMessageSpout,cache batch messages and emit message one by one.It is also recommendation spout at the present stage
+Based on batchMessageSpout,cache batch messages and emit message one by one.It is also recommendation spout at the present stage.
 
 #### RocketMQTridentSpout: 
-Based on latest trident api,but not compatible with jstorm now!
+Based on latest trident api,but not compatible with jstorm now.
 
 ## Documentation
 Please look forward to!
