@@ -1,8 +1,8 @@
-# rocketmq-storm-alibaba [![Build Status](https://travis-ci.org/rocketmq/rocketmq-storm.svg?branch=master)](https://travis-ci.org/rocketmq/rocketmq-storm)
+# rocketmq-storm [![Build Status](https://travis-ci.org/rocketmq/rocketmq-storm.svg?branch=master)](https://travis-ci.org/rocketmq/rocketmq-storm)
 
 ## Description
 
-rocketmq-storm-alibaba allows a Storm topology to consume an RocketMQ queue as an input source. It currently provides:
+rocketmq-storm allows a Storm topology to consume an RocketMQ queue as an input source. It currently provides:
 
 #### SimpleMessageSpout: 
 An simple implementation of backtype.storm.topology.IRichSpout,consumes the messages one by one.full features spout implementation exception flow control function;
