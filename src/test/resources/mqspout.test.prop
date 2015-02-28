@@ -1,5 +1,5 @@
 rocketmq.spout.consumer.group=rocketmq-demo-group
-rocketmq.spout.topic=rocketmq-test
+rocketmq.spout.topic=test
 rocketmq.spout.topic.tag=*
 
 

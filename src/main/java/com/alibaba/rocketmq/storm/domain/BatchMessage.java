@@ -15,7 +15,7 @@ import com.alibaba.rocketmq.common.message.MessageQueue;
  * @author Von Gosling
  */
 public class BatchMessage {
-    private final static long WAIT_TIMEOUT = 4;
+    private final static long WAIT_TIMEOUT = 5;
 
     private UUID              batchId;
     private List<MessageExt>  msgList;
@@ -50,7 +50,7 @@ public class BatchMessage {
     }
 
     public boolean waitFinish() throws InterruptedException {
-        return latch.await(WAIT_TIMEOUT, TimeUnit.HOURS);
+        return latch.await(WAIT_TIMEOUT, TimeUnit.MINUTES);
     }
 
     public void done() {

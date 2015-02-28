@@ -53,7 +53,7 @@ public class TransactionalTopologyDemo {
         LocalCluster cluster = new LocalCluster();
         cluster.submitTopology(String.valueOf(conf.get("topology.name")), conf, buildTopology());
 
-        Thread.sleep(50000);
+        Thread.sleep(5000);
 
         cluster.shutdown();
     }

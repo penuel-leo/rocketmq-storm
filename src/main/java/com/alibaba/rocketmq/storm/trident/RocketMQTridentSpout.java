@@ -43,7 +43,7 @@ public class RocketMQTridentSpout implements
     private static final ConcurrentMap<String, List<MessageQueue>> cachedMessageQueue = new MapMaker()
                                                                                               .makeMap();
     private RocketMQConfig                                         config;
-    private static DefaultMQPullConsumer                           consumer;
+    private DefaultMQPullConsumer                                  consumer;
 
     public RocketMQTridentSpout() {
     }
@@ -63,7 +63,6 @@ public class RocketMQTridentSpout implements
             Set<MessageQueue> mqs = consumer.fetchSubscribeMessageQueues(config.getTopic());
             cachedQueue = Lists.newArrayList(mqs);
             cachedMessageQueue.put(config.getTopic(), cachedQueue);
-
         }
         return cachedQueue;
     }
@@ -128,7 +127,7 @@ public class RocketMQTridentSpout implements
                 mq = getMessageQueue(config.getTopic()).get(Integer.parseInt(partition.getId()));
 
                 PullResult result = consumer.pullBlockIfNotFound(mq, config.getTopicTag(), index,
-                        32);
+                        config.getPullBatchSize());
                 List<MessageExt> msgs = result.getMsgFoundList();
                 if (null != msgs && msgs.size() > 0) {
                     batchMessages = new BatchMessage(msgs, mq);
