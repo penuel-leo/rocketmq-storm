@@ -16,6 +16,9 @@ Based on batchMessageSpout,cache batch messages and emit message one by one.It i
 #### RocketMQTridentSpout: 
 Based on latest trident api,but not compatible with jstorm now.
 
+#### SimplePullMessageSpout: 
+Support message pulling model
+
 ## Documentation
 Please look forward to!
 
