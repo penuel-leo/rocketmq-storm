@@ -27,7 +27,7 @@ public class BatchMessage {
     private long              nextOffset;
     private long              offset;
 
-    private MessageStat       messageStat;
+    private MessageStat       messageStat  = new MessageStat();
 
     public BatchMessage() {
     }

@@ -16,11 +16,11 @@ import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
 /**
  * @author Von Gosling
  */
-public class MessageConsumerTest {
+public class MessagePushConsumerTest {
 
     private RocketMQConfig  config;
     private MessageListener listener;
-    private MessageConsumer consumer;
+    private MessagePushConsumer consumer;
 
     @Before
     public void init() throws Exception {
@@ -38,7 +38,7 @@ public class MessageConsumerTest {
                 return ConsumeOrderlyStatus.SUCCESS;
             }
         };
-        consumer = new MessageConsumer(config);
+        consumer = new MessagePushConsumer(config);
         consumer.start(listener);
     }
 

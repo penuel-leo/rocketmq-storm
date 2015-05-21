@@ -34,4 +34,6 @@ public abstract class FastBeanUtils {
         return targetObject;
     }
 
+    private FastBeanUtils() {
+    }
 }

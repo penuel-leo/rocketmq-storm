@@ -8,12 +8,12 @@ import com.alibaba.rocketmq.client.consumer.DefaultMQPullConsumer;
 import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
 import com.alibaba.rocketmq.client.consumer.MQConsumer;
 import com.alibaba.rocketmq.client.consumer.listener.MessageListener;
+import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
+import com.alibaba.rocketmq.client.consumer.listener.MessageListenerOrderly;
 import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
-import com.alibaba.rocketmq.common.protocol.heartbeat.MessageModel;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
 import com.alibaba.rocketmq.storm.internal.tools.FastBeanUtils;
-import com.google.common.collect.Sets;
 
 /**
  * @author Von Gosling
@@ -40,17 +40,17 @@ public class MessageConsumerManager {
             pushConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
 
             pushConsumer.subscribe(config.getTopic(), config.getTopicTag());
-            pushConsumer.setMessageModel(MessageModel.CLUSTERING);
-            pushConsumer.registerMessageListener(listener);
-            //pushConsumer.setNamesrvAddr(null);
+            if (listener instanceof MessageListenerConcurrently) {
+                pushConsumer.registerMessageListener((MessageListenerConcurrently) listener);
+            }
+            if (listener instanceof MessageListenerOrderly) {
+                pushConsumer.registerMessageListener((MessageListenerOrderly) listener);
+            }
             return pushConsumer;
         } else {
             pullConsumer = (DefaultMQPullConsumer) FastBeanUtils.copyProperties(config,
                     DefaultMQPullConsumer.class);
             pullConsumer.setConsumerGroup(config.getGroupId());
-            pullConsumer.setMessageModel(MessageModel.CLUSTERING);
-            pullConsumer.setRegisterTopics(Sets.newHashSet(config.getTopic()));
-            //pullConsumer.setNamesrvAddr(null);
             return pullConsumer;
         }
     }

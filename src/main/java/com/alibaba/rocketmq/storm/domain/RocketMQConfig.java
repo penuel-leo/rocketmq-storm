@@ -62,9 +62,7 @@ public class RocketMQConfig implements Serializable {
     private boolean           ordered;
     /**
      * The max allowed failures for one single message, skip the failure message
-     * if excesses
-     * <p/>
-     * -1 means try again until success
+     * if excesses. -1 means try again until success
      */
     private int               maxFailTimes                  = 5;
 

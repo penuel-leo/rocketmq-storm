@@ -50,6 +50,8 @@ public abstract class ConfigUtils {
 
     public static final String CONFIG_ROCKETMQ               = "rocketmq.config";
 
+    public static final String CONFIG_PREFETCH_SIZE          = "rocketmq.prefetch.size";
+
     /**
      * Reads configuration from a classpath resource stream obtained from the
      * current thread's class loader through
@@ -90,7 +92,12 @@ public abstract class ConfigUtils {
         String topic = (String) config.get(ConfigUtils.CONFIG_TOPIC);
         String consumerGroup = (String) config.get(ConfigUtils.CONFIG_CONSUMER_GROUP);
         String topicTag = (String) config.get(ConfigUtils.CONFIG_TOPIC_TAG);
+        Integer pullBatchSize = (Integer) config.get(ConfigUtils.CONFIG_PREFETCH_SIZE);
         RocketMQConfig mqConfig = new RocketMQConfig(consumerGroup, topic, topicTag);
+
+        if (pullBatchSize != null && pullBatchSize > 0) {
+            mqConfig.setPullBatchSize(pullBatchSize);
+        }
 
         boolean ordered = BooleanUtils.toBooleanDefaultIfNull(
                 Boolean.valueOf((String) (config.get("rocketmq.spout.ordered"))), false);
@@ -100,4 +107,6 @@ public abstract class ConfigUtils {
         return config;
     }
 
+    private ConfigUtils() {
+    }
 }

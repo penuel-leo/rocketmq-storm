@@ -27,7 +27,7 @@ import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently
 import com.alibaba.rocketmq.client.consumer.listener.MessageListenerOrderly;
 import com.alibaba.rocketmq.common.message.MessageExt;
 import com.alibaba.rocketmq.common.message.MessageQueue;
-import com.alibaba.rocketmq.storm.MessageConsumer;
+import com.alibaba.rocketmq.storm.MessagePushConsumer;
 import com.alibaba.rocketmq.storm.annotation.Extension;
 import com.alibaba.rocketmq.storm.domain.BatchMessage;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
@@ -44,14 +44,14 @@ public class BatchMessageSpout implements IRichSpout {
                                                                          .getLogger(BatchMessageSpout.class);
     protected RocketMQConfig                    config;
 
-    protected MessageConsumer                   mqClient;
+    protected MessagePushConsumer               mqClient;
 
     protected String                            topologyName;
 
     protected SpoutOutputCollector              collector;
 
     protected final BlockingQueue<BatchMessage> batchQueue       = new LinkedBlockingQueue<BatchMessage>();
-    protected Map<UUID, BatchMessage>           batchCache       = new MapMaker().makeMap();
+    protected Map<UUID, BatchMessage>           cache            = new MapMaker().makeMap();
 
     public void setConfig(RocketMQConfig config) {
         this.config = config;
@@ -67,11 +67,11 @@ public class BatchMessageSpout implements IRichSpout {
         if (mqClient == null) {
             try {
                 config.setInstanceName(String.valueOf(context.getThisTaskId()));
-                mqClient = new MessageConsumer(config);
+                mqClient = new MessagePushConsumer(config);
 
                 mqClient.start(buildMessageListener());
             } catch (Throwable e) {
-                LOG.error("Failed to init consumer!", e);
+                LOG.error("Failed to init consumer !", e);
                 throw new RuntimeException(e);
             }
         }
@@ -81,29 +81,28 @@ public class BatchMessageSpout implements IRichSpout {
     }
 
     public void nextTuple() {
-        BatchMessage msgs = null;
+        BatchMessage msg = null;
         try {
-            msgs = batchQueue.take();
+            msg = batchQueue.take();
         } catch (InterruptedException e) {
             return;
         }
-        if (msgs == null) {
+        if (msg == null) {
             return;
         }
 
-        UUID uuid = msgs.getBatchId();
-        collector.emit(new Values(msgs.getMsgList()), uuid);
-        return;
+        UUID uuid = msg.getBatchId();
+        collector.emit(new Values(msg.getMsgList()), uuid);
     }
 
     public BatchMessage finish(UUID batchId) {
-        BatchMessage batchMsgs = batchCache.remove(batchId);
-        if (batchMsgs == null) {
-            LOG.warn("Failed to get cached values {}!", batchId);
+        BatchMessage batchMsg = cache.remove(batchId);
+        if (batchMsg == null) {
+            LOG.warn("Failed to get cache {}!", batchId);
             return null;
         } else {
-            batchMsgs.done();
-            return batchMsgs;
+            batchMsg.done();
+            return batchMsg;
         }
     }
 
@@ -113,25 +112,21 @@ public class BatchMessageSpout implements IRichSpout {
             finish(batchId);
             return;
         } else {
-            LOG.error("Id isn't UUID, type {}!", id.getClass().getName());
+            LOG.error("Id isn't UUID, type is {}!", id.getClass().getName());
         }
     }
 
     protected void handleFail(UUID batchId) {
-        BatchMessage msgs = batchCache.get(batchId);
-        if (msgs == null) {
-            LOG.warn("No MessageTuple entry of {}!", batchId);
-            return;
-        }
+        BatchMessage msg = cache.get(batchId);
 
-        LOG.info("Fail to handle {}!", msgs);
+        LOG.info("Failed to handle {} !", msg);
 
-        int failureTimes = msgs.getMessageStat().getFailureTimes().incrementAndGet();
+        int failureTimes = msg.getMessageStat().getFailureTimes().incrementAndGet();
         if (config.getMaxFailTimes() < 0 || failureTimes < config.getMaxFailTimes()) {
-            batchQueue.offer(msgs);
+            batchQueue.offer(msg);
             return;
         } else {
-            LOG.info("Skip messages {}!", msgs);
+            LOG.info("Skip message {} !", msg);
             finish(batchId);
             return;
         }
@@ -144,7 +139,7 @@ public class BatchMessageSpout implements IRichSpout {
             handleFail(batchId);
             return;
         } else {
-            LOG.error("Id isn't UUID, type:{}!", id.getClass().getName());
+            LOG.error("Id isn't UUID, type is {} !", id.getClass().getName());
         }
     }
 
@@ -173,7 +168,7 @@ public class BatchMessageSpout implements IRichSpout {
     }
 
     public void cleanup() {
-        for (Entry<UUID, BatchMessage> entry : batchCache.entrySet()) {
+        for (Entry<UUID, BatchMessage> entry : cache.entrySet()) {
             BatchMessage msgs = entry.getValue();
             msgs.fail();
         }
@@ -198,7 +193,7 @@ public class BatchMessageSpout implements IRichSpout {
                     }
                 }
             };
-            LOG.debug("Successfully create ordered listener!");
+            LOG.debug("Successfully create ordered listener !");
             return listener;
         } else {
             MessageListener listener = new MessageListenerConcurrently() {
@@ -214,13 +209,13 @@ public class BatchMessageSpout implements IRichSpout {
                 }
 
             };
-            LOG.debug("Successfully create concurrently listener!");
+            LOG.debug("Successfully create concurrently listener !");
             return listener;
         }
     }
 
     public boolean consumeMessage(List<MessageExt> msgs, MessageQueue mq) {
-        LOG.info("Receiving {} messages {} from MQ {}", new Object[] { msgs.size(), msgs, mq });
+        LOG.info("Receiving {} messages {} from MQ {} !", new Object[] { msgs.size(), msgs, mq });
 
         if (msgs == null || msgs.isEmpty()) {
             return true;
@@ -228,18 +223,18 @@ public class BatchMessageSpout implements IRichSpout {
 
         BatchMessage batchMsgs = new BatchMessage(msgs, mq);
 
-        batchCache.put(batchMsgs.getBatchId(), batchMsgs);
+        cache.put(batchMsgs.getBatchId(), batchMsgs);
 
         batchQueue.offer(batchMsgs);
 
         try {
             boolean isDone = batchMsgs.waitFinish();
             if (!isDone) {
-                batchCache.remove(batchMsgs.getBatchId());
+                cache.remove(batchMsgs.getBatchId());
                 return false;
             }
         } catch (InterruptedException e) {
-            batchCache.remove(batchMsgs.getBatchId());
+            cache.remove(batchMsgs.getBatchId());
             return false;
         }
 

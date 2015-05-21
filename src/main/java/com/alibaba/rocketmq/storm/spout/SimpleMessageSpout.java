@@ -22,7 +22,7 @@ import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
 import com.alibaba.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import com.alibaba.rocketmq.common.Pair;
 import com.alibaba.rocketmq.common.message.MessageExt;
-import com.alibaba.rocketmq.storm.MessageConsumer;
+import com.alibaba.rocketmq.storm.MessagePushConsumer;
 import com.alibaba.rocketmq.storm.annotation.Extension;
 import com.alibaba.rocketmq.storm.domain.MessageStat;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
@@ -38,7 +38,7 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
     private static final Logger                          LOG              = LoggerFactory
                                                                                   .getLogger(SimpleMessageSpout.class);
 
-    private MessageConsumer                              consumer;
+    private MessagePushConsumer                          consumer;
 
     private SpoutOutputCollector                         collector;
     private TopologyContext                              context;
@@ -60,11 +60,11 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
         if (consumer == null) {
             try {
                 config.setInstanceName(String.valueOf(context.getThisTaskId()));
-                consumer = new MessageConsumer(config);
+                consumer = new MessagePushConsumer(config);
 
                 consumer.start(this);
             } catch (Exception e) {
-                LOG.error("Failed to init consumer!", e);
+                LOG.error("Failed to init consumer !", e);
                 throw new RuntimeException(e);
             }
         }
@@ -74,7 +74,7 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
         if (!failureMsgs.isEmpty()) {
             for (Entry<String, Pair<MessageExt, MessageStat>> entry : failureMsgs.entrySet()) {
                 Pair<MessageExt, MessageStat> pair = entry.getValue();
-                LOG.warn("Failed to handle message {},message statics {}!",
+                LOG.warn("Failed to handle message {},message statics {} !",
                         new Object[] { pair.getObject1(), pair.getObject2() });
             }
         }
@@ -136,7 +136,7 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
             try {
                 msg = consumer.getConsumer().viewMessage(msgId);
             } catch (Exception e) {
-                LOG.error("Failed to get message " + msgId + " from broker!", e);
+                LOG.error("Failed to get message {} from broker !", new Object[] { msgId }, e);
                 return;
             }
 
@@ -154,7 +154,7 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
                 failureQueue.offer(pair);
                 return;
             } else {
-                LOG.info("Failure too many times, skip message {}!", pair.getObject1());
+                LOG.info("Failure too many times, skip message {} !", pair.getObject1());
                 ack(msgId);
                 return;
             }
@@ -169,7 +169,7 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
                 collector.emit(new Values(msg, msgStat), msg.getMsgId());
             }
         } catch (Exception e) {
-            LOG.error("Failed to emit message {} in context {},caused by {}!", new Object[] { msgs,
+            LOG.error("Failed to emit message {} in context {},caused by {} !", new Object[] { msgs,
                     this.context.getThisTaskId(), e.getCause() });
             return ConsumeConcurrentlyStatus.RECONSUME_LATER;
         }

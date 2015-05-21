@@ -33,7 +33,7 @@ public final class RocketMQSpoutFactory {
             case STREAM:
                 return locateSpout(spoutName);
             default:
-                logger.warn("Can not support this spout type {} temporarily!", spoutName);
+                logger.warn("Can not support this spout type {} temporarily !", spoutName);
                 return locateSpout(DEFAULT_BROKER);
 
         }

@@ -12,17 +12,17 @@ import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
 /**
  * @author Von Gosling
  */
-public class MessageConsumer implements Serializable {
+public class MessagePushConsumer implements Serializable {
     private static final long               serialVersionUID = 4641537253577312163L;
 
     private static final Logger             LOG              = LoggerFactory
-                                                                     .getLogger(MessageConsumer.class);
+                                                                     .getLogger(MessagePushConsumer.class);
 
     private final RocketMQConfig            config;
 
     private transient DefaultMQPushConsumer consumer;
 
-    public MessageConsumer(RocketMQConfig config) {
+    public MessagePushConsumer(RocketMQConfig config) {
         this.config = config;
     }
 
@@ -32,25 +32,25 @@ public class MessageConsumer implements Serializable {
 
         this.consumer.start();
 
-        LOG.info("Init consumer successfully,configuration->{}", config);
+        LOG.info("Init consumer successfully,configuration->{} !", config);
     }
 
     public void shutdown() {
         consumer.shutdown();
 
-        LOG.info("Successfully shutdown consumer {}", config);
+        LOG.info("Successfully shutdown consumer {} !", config);
     }
 
     public void suspend() {
         consumer.suspend();
 
-        LOG.info("Pause consumer");
+        LOG.info("Pause consumer !");
     }
 
     public void resume() {
         consumer.resume();
 
-        LOG.info("Resume consumer");
+        LOG.info("Resume consumer !");
     }
 
     public DefaultMQPushConsumer getConsumer() {

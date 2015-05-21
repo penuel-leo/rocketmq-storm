@@ -50,7 +50,7 @@ public class StreamMessageSpout extends BatchMessageSpout {
         super.open(conf, context, collector);
         ExpiredCallback<String, MessageCacheItem> callback = new ExpiredCallback<String, MessageCacheItem>() {
             public void expire(String key, MessageCacheItem val) {
-                LOG.warn("Long time no ack,key is {},value is {}", key, val);
+                LOG.warn("Long time no ack,key is {},value is {} !", key, val);
                 msgCache.put(key, val);
                 fail(key);
             }
@@ -58,7 +58,7 @@ public class StreamMessageSpout extends BatchMessageSpout {
         };
         msgCache = new RotatingMap<String, MessageCacheItem>(3600 * 5, callback);
 
-        LOG.info("Topology {} opened {} spout successfully!",
+        LOG.info("Topology {} opened {} spout successfully !",
                 new Object[] { topologyName, config.getTopic() });
     }
 
@@ -101,7 +101,7 @@ public class StreamMessageSpout extends BatchMessageSpout {
             String messageId = cacheItem.getMsg().getMsgId();
             collector.emit(values, messageId);
 
-            LOG.debug("Emited tuple {},mssageId is {}!", values, messageId);
+            LOG.debug("Emited tuple {},mssageId is {} !", values, messageId);
             return;
         }
 
@@ -113,7 +113,7 @@ public class StreamMessageSpout extends BatchMessageSpout {
     public void finish(String msgId) {
         MessageCacheItem cacheItem = (MessageCacheItem) msgCache.remove(msgId);
         if (cacheItem == null) {
-            LOG.warn("Failed to get cached values {}!", msgId);
+            LOG.warn("Failed to get from cache {} !", msgId);
             return;
         }
 
@@ -140,25 +140,25 @@ public class StreamMessageSpout extends BatchMessageSpout {
             finish((String) id);
             return;
         } else {
-            LOG.error("Id isn't Long, type is {}!", id.getClass().getName());
+            LOG.error("Id isn't Long, type is {} !", id.getClass().getName());
         }
     }
 
     public void handleFail(String msgId) {
         MessageCacheItem cacheItem = msgCache.get(msgId);
         if (cacheItem == null) {
-            LOG.warn("Failed to get cached values {}!", msgId);
+            LOG.warn("Failed to get cached values {} !", msgId);
             return;
         }
 
-        LOG.info("Fail to handle {}!", cacheItem);
+        LOG.info("Failed to handle {} !", cacheItem);
 
         int failTime = cacheItem.getMsgStat().getFailureTimes().incrementAndGet();
         if (config.getMaxFailTimes() < 0 || failTime < config.getMaxFailTimes()) {
             msgQueue.offer(cacheItem);
             return;
         } else {
-            LOG.info("Skip message {}!", cacheItem.getMsg().toString());
+            LOG.info("Skip message {} !", cacheItem.getMsg().toString());
             finish(msgId);
             return;
         }
@@ -171,7 +171,7 @@ public class StreamMessageSpout extends BatchMessageSpout {
             handleFail((String) id);
             return;
         } else {
-            LOG.error("Id isn't Long, type is {}" + id.getClass().getName());
+            LOG.error("Id isn't Long, type is {}", id.getClass().getName());
         }
     }
 

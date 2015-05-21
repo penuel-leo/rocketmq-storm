@@ -17,7 +17,7 @@ import com.alibaba.rocketmq.storm.bolt.RocketMqBolt;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
 import com.alibaba.rocketmq.storm.domain.RocketMQSpouts;
 import com.alibaba.rocketmq.storm.internal.tools.ConfigUtils;
-import com.alibaba.rocketmq.storm.spout.StreamMessageSpout;
+import com.alibaba.rocketmq.storm.spout.SimpleMessageSpout;
 import com.alibaba.rocketmq.storm.spout.factory.RocketMQSpoutFactory;
 
 /**
@@ -47,8 +47,8 @@ public class SimpleTopologyDemo {
 
         BoltDeclarer writerBolt = builder.setBolt(BOLT_NAME, new RocketMqBolt(), boltParallel);
 
-        StreamMessageSpout defaultSpout = (StreamMessageSpout) RocketMQSpoutFactory
-                .getSpout(RocketMQSpouts.STREAM.getValue());
+        SimpleMessageSpout defaultSpout = (SimpleMessageSpout) RocketMQSpoutFactory
+                .getSpout(RocketMQSpouts.SIMPLE.getValue());
         RocketMQConfig mqConig = (RocketMQConfig) config.get(ConfigUtils.CONFIG_ROCKETMQ);
         defaultSpout.setConfig(mqConig);
 
