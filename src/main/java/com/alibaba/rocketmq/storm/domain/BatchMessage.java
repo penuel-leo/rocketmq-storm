@@ -18,7 +18,10 @@ public class BatchMessage {
     private final static long WAIT_TIMEOUT = 5;
 
     private UUID              batchId;
-    private List<MessageExt>  msgList;
+    /**
+     * We need not store these msg into zookeeper in case of Trident topology.
+     */
+    private transient List<MessageExt>  msgList;
     private MessageQueue      mq;
 
     private CountDownLatch    latch;
