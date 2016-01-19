@@ -1,15 +1,14 @@
 package com.alibaba.rocketmq.storm.domain;
 
+import com.alibaba.rocketmq.common.message.MessageExt;
+import com.alibaba.rocketmq.common.message.MessageQueue;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-
-import com.alibaba.rocketmq.common.message.MessageExt;
-import com.alibaba.rocketmq.common.message.MessageQueue;
 
 /**
  * @author Von Gosling
@@ -19,7 +18,7 @@ public class BatchMessage {
 
     private UUID              batchId;
     /**
-     * We need not store these msg into zookeeper in case of Trident topology.
+     * No need not store these messages into zookeeper in case of Trident topology.
      */
     private transient List<MessageExt>  msgList;
     private MessageQueue      mq;

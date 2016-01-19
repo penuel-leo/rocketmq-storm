@@ -1,20 +1,7 @@
 package com.alibaba.rocketmq.storm.trident;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import storm.trident.operation.TridentCollector;
-import storm.trident.spout.IPartitionedTridentSpout;
-import storm.trident.spout.ISpoutPartition;
-import storm.trident.topology.TransactionAttempt;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.tuple.Fields;
-
 import com.alibaba.rocketmq.client.consumer.PullResult;
 import com.alibaba.rocketmq.client.exception.MQBrokerException;
 import com.alibaba.rocketmq.client.exception.MQClientException;
@@ -26,6 +13,17 @@ import com.alibaba.rocketmq.storm.domain.BatchMessage;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import storm.trident.operation.TridentCollector;
+import storm.trident.spout.IPartitionedTridentSpout;
+import storm.trident.spout.ISpoutPartition;
+import storm.trident.topology.TransactionAttempt;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author Von Gosling
@@ -33,30 +31,26 @@ import com.google.common.collect.MapMaker;
 public class RocketMQTridentSpout implements
         IPartitionedTridentSpout<List<MessageQueue>, ISpoutPartition, BatchMessage> {
 
-    private static final long                                      serialVersionUID   = 8972193358178718167L;
+    private static final long serialVersionUID = 8972193358178718167L;
 
-    private static final Logger                                    LOG                = LoggerFactory.getLogger(RocketMQTridentSpout.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RocketMQTridentSpout.class);
 
     private static final ConcurrentMap<String, List<MessageQueue>> cachedMessageQueue = new MapMaker().makeMap();
     private RocketMQConfig config;
-    private volatile MessagePullConsumer                           consumer;
+    private volatile MessagePullConsumer consumer;
 
     public RocketMQTridentSpout() {
     }
 
-    // BugFix: NPE
+    //Do not need to Double-Checked Locking
     private MessagePullConsumer getMessagePullConsumer() {
         if (null == consumer) {
-            synchronized (this) {
-                if (null == consumer) {
-                    consumer = new MessagePullConsumer(config);
-                    try {
-                        consumer.start();
-                    } catch (Exception e) {
-                        LOG.error("Failed to start DefaultMQPullConsumer");
-                        throw new IllegalStateException(e);
-                    }
-                }
+            consumer = new MessagePullConsumer(config);
+            try {
+                consumer.start();
+            } catch (Exception e) {
+                LOG.error("Failed to start DefaultMQPullConsumer");
+                throw new IllegalStateException(e);
             }
         }
         return consumer;
@@ -78,7 +72,7 @@ public class RocketMQTridentSpout implements
     private List<MessageQueue> getMessageQueue(String topic) {
         List<MessageQueue> cachedQueue = getMessagePullConsumer().getTopicQueueMappings().get(config.getTopic());
         if (cachedQueue == null) {
-            Set<MessageQueue> mqs = null;
+            Set<MessageQueue> mqs;
             try {
                 mqs = getMessagePullConsumer().getConsumer().fetchSubscribeMessageQueues(topic);
             } catch (MQClientException e) {
@@ -136,12 +130,8 @@ public class RocketMQTridentSpout implements
             return partition;
         }
 
-        private BatchMessage process(PullResult result, //
-                             MessageQueue mq, //
-                             TridentCollector collector, //
-                             TransactionAttempt tx, //
-                             BatchMessage lastPartitionMeta//
-        ) throws MQClientException {
+        private BatchMessage process(PullResult result, MessageQueue mq, TridentCollector collector,
+                                     TransactionAttempt tx, BatchMessage lastPartitionMeta) throws MQClientException {
             switch (result.getPullStatus()) {
                 case FOUND:
                     BatchMessage batchMessages = null;
@@ -183,7 +173,7 @@ public class RocketMQTridentSpout implements
                                                   TridentCollector collector,
                                                   ISpoutPartition partition,
                                                   BatchMessage lastPartitionMeta) {
-            long index = 0;
+            long index;
             BatchMessage batchMessages = null;
             MessageQueue mq = getMessageQueue(config.getTopic()).get(Integer.parseInt(partition.getId()));
             try {
@@ -209,12 +199,12 @@ public class RocketMQTridentSpout implements
         }
 
         @Override
-        public void emitPartitionBatch(TransactionAttempt tx, //
-                                       TridentCollector collector, //
-                                       ISpoutPartition partition, //
-                                       BatchMessage partitionMeta //
+        public void emitPartitionBatch(TransactionAttempt tx,
+                                       TridentCollector collector,
+                                       ISpoutPartition partition,
+                                       BatchMessage partitionMeta
         ) {
-            MessageQueue mq = null;
+            MessageQueue mq;
             try {
                 mq = getMessageQueue(config.getTopic()).get(Integer.parseInt(partition.getId()));
                 PullResult result = getMessagePullConsumer().getConsumer().pullBlockIfNotFound(mq,
