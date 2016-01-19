@@ -100,8 +100,8 @@ $cd target && storm jar rocketmq-storm-1.0.0-SNAPSHOT-jar-with-dependencies.jar 
 
 
 ## Compatibility
-#### RocketMQ 3.x
+#### [RocketMQ 3.x](https://github.com/alibaba/RocketMQ)
 
-#### Jstorm 0.9.X
+#### [Jstorm 0.9.X](https://github.com/alibaba/jstorm)
 
-#### Storm 0.9.x
+#### [Storm 0.9.x](https://github.com/apache/storm)

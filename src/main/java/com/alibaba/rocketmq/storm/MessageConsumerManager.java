@@ -1,9 +1,5 @@
 package com.alibaba.rocketmq.storm;
 
-import org.apache.commons.lang.BooleanUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.alibaba.rocketmq.client.consumer.DefaultMQPullConsumer;
 import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
 import com.alibaba.rocketmq.client.consumer.MQConsumer;
@@ -14,16 +10,16 @@ import com.alibaba.rocketmq.client.exception.MQClientException;
 import com.alibaba.rocketmq.common.consumer.ConsumeFromWhere;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
 import com.alibaba.rocketmq.storm.internal.tools.FastBeanUtils;
+import org.apache.commons.lang.BooleanUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Von Gosling
  */
 public class MessageConsumerManager {
 
-    private static final Logger          LOG = LoggerFactory
-                                                     .getLogger(MessageConsumerManager.class);
-    private static DefaultMQPushConsumer pushConsumer;
-    private static DefaultMQPullConsumer pullConsumer;
+    private static final Logger LOG = LoggerFactory.getLogger(MessageConsumerManager.class);
 
     MessageConsumerManager() {
     }
@@ -31,10 +27,10 @@ public class MessageConsumerManager {
     public static MQConsumer getConsumerInstance(RocketMQConfig config, MessageListener listener,
                                                  Boolean isPushlet) throws MQClientException {
         LOG.info("Begin to init consumer,instanceName->{},configuration->{}",
-                new Object[] { config.getInstanceName(), config });
+                new Object[]{config.getInstanceName(), config});
 
         if (BooleanUtils.isTrue(isPushlet)) {
-            pushConsumer = (DefaultMQPushConsumer) FastBeanUtils.copyProperties(config,
+            DefaultMQPushConsumer pushConsumer = (DefaultMQPushConsumer) FastBeanUtils.copyProperties(config,
                     DefaultMQPushConsumer.class);
             pushConsumer.setConsumerGroup(config.getGroupId());
             pushConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_LAST_OFFSET);
@@ -48,9 +44,10 @@ public class MessageConsumerManager {
             }
             return pushConsumer;
         } else {
-            pullConsumer = (DefaultMQPullConsumer) FastBeanUtils.copyProperties(config,
+            DefaultMQPullConsumer pullConsumer = (DefaultMQPullConsumer) FastBeanUtils.copyProperties(config,
                     DefaultMQPullConsumer.class);
             pullConsumer.setConsumerGroup(config.getGroupId());
+
             return pullConsumer;
         }
     }

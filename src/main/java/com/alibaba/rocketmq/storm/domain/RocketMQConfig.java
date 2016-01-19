@@ -1,9 +1,9 @@
 package com.alibaba.rocketmq.storm.domain;
 
-import java.io.Serializable;
-
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+
+import java.io.Serializable;
 
 /**
  * @author Von Gosling
@@ -19,7 +19,7 @@ public class RocketMQConfig implements Serializable {
      * Group by message actor
      */
     private String            groupId;
-    /*
+    /**
      * Message topic
      */
     private String            topic;

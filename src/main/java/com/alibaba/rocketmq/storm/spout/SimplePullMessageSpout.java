@@ -1,21 +1,11 @@
 package com.alibaba.rocketmq.storm.spout;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import org.apache.storm.guava.collect.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
-
 import com.alibaba.rocketmq.client.consumer.PullResult;
 import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.storm.MessagePullConsumer;
@@ -23,24 +13,32 @@ import com.alibaba.rocketmq.storm.domain.BatchMessage;
 import com.alibaba.rocketmq.storm.domain.QueueOffsetCache;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
 import com.google.common.collect.MapMaker;
+import org.apache.storm.guava.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * @author von gosling
  */
 public class SimplePullMessageSpout implements IRichSpout {
-    private static final long         serialVersionUID = -5561450001033205169L;
+    private static final long serialVersionUID = -5561450001033205169L;
 
-    private static final Logger       LOG              = LoggerFactory
-                                                               .getLogger(SimplePullMessageSpout.class);
+    private static final Logger LOG = LoggerFactory
+            .getLogger(SimplePullMessageSpout.class);
 
-    private MessagePullConsumer       consumer;
+    private MessagePullConsumer consumer;
 
-    protected SpoutOutputCollector    collector;
-    protected TopologyContext         context;
+    protected SpoutOutputCollector collector;
+    protected TopologyContext context;
 
-    private RocketMQConfig            config;
+    private RocketMQConfig config;
 
-    protected Map<UUID, BatchMessage> batchCache       = new MapMaker().makeMap();
+    protected Map<UUID, BatchMessage> batchCache = new MapMaker().makeMap();
 
     @Override
     public void open(@SuppressWarnings("rawtypes") Map conf, TopologyContext context,
@@ -51,13 +49,14 @@ public class SimplePullMessageSpout implements IRichSpout {
             try {
                 config.setInstanceName(String.valueOf(context.getThisTaskId()));
                 consumer = new MessagePullConsumer(config);
+                consumer.start();
 
                 Set<MessageQueue> mqs = consumer.getConsumer().fetchSubscribeMessageQueues(
                         config.getTopic());
 
                 consumer.getTopicQueueMappings().put(config.getTopic(), Lists.newArrayList(mqs));
             } catch (Exception e) {
-                LOG.error("Error occured !", e);
+                LOG.error("Error occurred !", e);
                 throw new IllegalStateException(e);
             }
         }
@@ -107,14 +106,14 @@ public class SimplePullMessageSpout implements IRichSpout {
                         break;
                 }
             } catch (Exception e) {
-                LOG.error("Error occured in queue {} !", new Object[] { mq }, e);
+                LOG.error("Error occurred in queue {} !", new Object[]{mq}, e);
             }
         }
     }
 
     @Override
     public void ack(final Object id) {
-        BatchMessage batchMsgs = batchCache.remove((UUID) id);
+        BatchMessage batchMsgs = batchCache.remove(id);
         if (batchMsgs == null) {
             LOG.warn("Failed to get cached value from key {} !", id);
         }
@@ -122,7 +121,7 @@ public class SimplePullMessageSpout implements IRichSpout {
 
     @Override
     public void fail(final Object id) {
-        BatchMessage msg = batchCache.get((UUID) id);
+        BatchMessage msg = batchCache.get(id);
 
         int failureTimes = msg.getMessageStat().getFailureTimes().incrementAndGet();
 
