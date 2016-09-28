@@ -1,3 +1,20 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package com.alibaba.rocketmq.storm.domain;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -9,62 +26,62 @@ import java.io.Serializable;
  * @author Von Gosling
  */
 public class RocketMQConfig implements Serializable {
-    private static final long serialVersionUID              = 4157424979688590880L;
+    private static final long serialVersionUID = 4157424979688590880L;
 
     /**
      * Unique mark for every JVM instance
      */
-    private String            instanceName;
+    private String instanceName;
     /**
      * Group by message actor
      */
-    private String            groupId;
+    private String groupId;
     /**
      * Message topic
      */
-    private String            topic;
+    private String topic;
     /**
      * Message topic tag
      */
-    private String            topicTag;
+    private String topicTag;
     /**
      * Minimal consumer thread count
      */
-    private int               consumeThreadMin              = 20;
+    private int consumeThreadMin = 20;
     /**
      * Maximal consumer thread count
      */
-    private int               consumeThreadMax              = 64;
+    private int consumeThreadMax = 64;
     /**
      * If piled-up message exceeds this value,adjust consumer thread to max
      * value dynamically
      */
-    private long              adjustThreadPoolNumsThreshold = 100000l;
+    private long adjustThreadPoolNumsThreshold = 100000L;
     /**
      * Local message queue threshold, trigger flow control if exceeds this value
      */
-    private int               pullThresholdForQueue         = 1024;
+    private int pullThresholdForQueue = 1024;
     /**
      * The message size from server for every pull batch
      */
-    private int               pullBatchSize                 = 32;
+    private int pullBatchSize = 32;
     /**
      * Pull interval from server for every pull
      */
-    private long              pullInterval                  = 0;
+    private long pullInterval = 0;
     /**
      * Fetch message size from local queue
      */
-    private int               consumeMessageBatchMaxSize    = 32;
+    private int consumeMessageBatchMaxSize = 32;
     /**
      * Consumption of local sequence, will affect performance
      */
-    private boolean           ordered;
+    private boolean ordered;
     /**
      * The max allowed failures for one single message, skip the failure message
      * if excesses. -1 means try again until success
      */
-    private int               maxFailTimes                  = 5;
+    private int maxFailTimes = 5;
 
     public RocketMQConfig() {
     }
@@ -169,7 +186,7 @@ public class RocketMQConfig implements Serializable {
 
     /**
      * @param adjustThreadPoolNumsThreshold the adjustThreadPoolNumsThreshold to
-     *            set
+     *                                      set
      */
     public void setAdjustThreadPoolNumsThreshold(long adjustThreadPoolNumsThreshold) {
         this.adjustThreadPoolNumsThreshold = adjustThreadPoolNumsThreshold;

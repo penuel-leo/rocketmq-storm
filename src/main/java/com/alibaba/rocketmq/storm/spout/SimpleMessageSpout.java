@@ -1,13 +1,21 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package com.alibaba.rocketmq.storm.spout;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -15,7 +23,6 @@ import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
-
 import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
 import com.alibaba.rocketmq.client.consumer.listener.ConsumeConcurrentlyStatus;
@@ -27,26 +34,34 @@ import com.alibaba.rocketmq.storm.annotation.Extension;
 import com.alibaba.rocketmq.storm.domain.MessageStat;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
 import com.google.common.collect.MapMaker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author Von Gosling
  */
 @Extension("simple")
 public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrently {
-    private static final long                            serialVersionUID = -2277714452693486954L;
+    private static final long serialVersionUID = -2277714452693486954L;
 
-    private static final Logger                          LOG              = LoggerFactory
-                                                                                  .getLogger(SimpleMessageSpout.class);
+    private static final Logger LOG = LoggerFactory
+            .getLogger(SimpleMessageSpout.class);
 
-    private MessagePushConsumer                          consumer;
+    private MessagePushConsumer consumer;
 
-    private SpoutOutputCollector                         collector;
-    private TopologyContext                              context;
+    private SpoutOutputCollector collector;
+    private TopologyContext context;
 
-    private BlockingQueue<Pair<MessageExt, MessageStat>> failureQueue     = new LinkedBlockingQueue<Pair<MessageExt, MessageStat>>();
-    private Map<String, Pair<MessageExt, MessageStat>>   failureMsgs;
+    private BlockingQueue<Pair<MessageExt, MessageStat>> failureQueue = new LinkedBlockingQueue<Pair<MessageExt, MessageStat>>();
+    private Map<String, Pair<MessageExt, MessageStat>> failureMsgs;
 
-    private RocketMQConfig                               config;
+    private RocketMQConfig config;
 
     public void setConfig(RocketMQConfig config) {
         this.config = config;
@@ -75,7 +90,7 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
             for (Entry<String, Pair<MessageExt, MessageStat>> entry : failureMsgs.entrySet()) {
                 Pair<MessageExt, MessageStat> pair = entry.getValue();
                 LOG.warn("Failed to handle message {},message statics {} !",
-                        new Object[] { pair.getObject1(), pair.getObject2() });
+                        new Object[]{pair.getObject1(), pair.getObject2()});
             }
         }
 
@@ -94,7 +109,7 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
 
     /**
      * Just handle failure message here
-     * 
+     *
      * @see backtype.storm.spout.ISpout#nextTuple()
      */
     public void nextTuple() {
@@ -122,7 +137,7 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
     /**
      * if there are a lot of failure case, the performance will be bad because
      * consumer.viewMessage(msgId) isn't fast
-     * 
+     *
      * @see backtype.storm.spout.ISpout#fail(Object)
      */
     public void fail(Object id) {
@@ -136,7 +151,7 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
             try {
                 msg = consumer.getConsumer().viewMessage(msgId);
             } catch (Exception e) {
-                LOG.error("Failed to get message {} from broker !", new Object[] { msgId }, e);
+                LOG.error("Failed to get message {} from broker !", new Object[]{msgId}, e);
                 return;
             }
 
@@ -169,8 +184,8 @@ public class SimpleMessageSpout implements IRichSpout, MessageListenerConcurrent
                 collector.emit(new Values(msg, msgStat), msg.getMsgId());
             }
         } catch (Exception e) {
-            LOG.error("Failed to emit message {} in context {},caused by {} !", new Object[] { msgs,
-                    this.context.getThisTaskId(), e.getCause() });
+            LOG.error("Failed to emit message {} in context {},caused by {} !", new Object[]{msgs,
+                    this.context.getThisTaskId(), e.getCause()});
             return ConsumeConcurrentlyStatus.RECONSUME_LATER;
         }
         return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;

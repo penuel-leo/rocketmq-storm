@@ -1,4 +1,38 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package com.alibaba.rocketmq.storm.spout;
+
+import backtype.storm.spout.SpoutOutputCollector;
+import backtype.storm.task.TopologyContext;
+import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.tuple.Fields;
+import backtype.storm.tuple.Values;
+import backtype.storm.utils.RotatingMap;
+import backtype.storm.utils.RotatingMap.ExpiredCallback;
+import com.alibaba.rocketmq.common.message.MessageExt;
+import com.alibaba.rocketmq.storm.annotation.Extension;
+import com.alibaba.rocketmq.storm.domain.BatchMessage;
+import com.alibaba.rocketmq.storm.domain.MessageCacheItem;
+import com.google.common.collect.Sets;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Queue;
@@ -8,42 +42,23 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import backtype.storm.spout.SpoutOutputCollector;
-import backtype.storm.task.TopologyContext;
-import backtype.storm.topology.OutputFieldsDeclarer;
-import backtype.storm.tuple.Fields;
-import backtype.storm.tuple.Values;
-import backtype.storm.utils.RotatingMap;
-import backtype.storm.utils.RotatingMap.ExpiredCallback;
-
-import com.alibaba.rocketmq.common.message.MessageExt;
-import com.alibaba.rocketmq.storm.annotation.Extension;
-import com.alibaba.rocketmq.storm.domain.BatchMessage;
-import com.alibaba.rocketmq.storm.domain.MessageCacheItem;
-import com.google.common.collect.Sets;
-
 /**
  * @author Von Gosling
  */
 @Extension("stream")
 public class StreamMessageSpout extends BatchMessageSpout {
-    private static final long                     serialVersionUID = 464153253576782163L;
+    private static final long serialVersionUID = 464153253576782163L;
 
-    private static final Logger                   LOG              = LoggerFactory
-                                                                           .getLogger(StreamMessageSpout.class);
+    private static final Logger LOG = LoggerFactory
+            .getLogger(StreamMessageSpout.class);
 
-    private final Queue<MessageCacheItem>         msgQueue         = new ConcurrentLinkedQueue<MessageCacheItem>();
+    private final Queue<MessageCacheItem> msgQueue = new ConcurrentLinkedQueue<MessageCacheItem>();
     private RotatingMap<String, MessageCacheItem> msgCache;
 
     /**
      * This field is used to check whether one batch is finish or not
      */
-    private Map<UUID, BatchMsgsTag>               batchMsgsMap     = new ConcurrentHashMap<UUID, BatchMsgsTag>();
+    private Map<UUID, BatchMsgsTag> batchMsgsMap = new ConcurrentHashMap<UUID, BatchMsgsTag>();
 
     public void open(@SuppressWarnings("rawtypes") final Map conf, final TopologyContext context,
                      final SpoutOutputCollector collector) {
@@ -59,7 +74,7 @@ public class StreamMessageSpout extends BatchMessageSpout {
         msgCache = new RotatingMap<String, MessageCacheItem>(3600 * 5, callback);
 
         LOG.info("Topology {} opened {} spout successfully !",
-                new Object[] { topologyName, config.getTopic() });
+                new Object[]{topologyName, config.getTopic()});
     }
 
     public void prepareMsg() {
@@ -181,7 +196,7 @@ public class StreamMessageSpout extends BatchMessageSpout {
 
     public static class BatchMsgsTag {
         private final Set<String> msgIds;
-        private final long        createTs;
+        private final long createTs;
 
         public BatchMsgsTag() {
             this.msgIds = Sets.newHashSet();

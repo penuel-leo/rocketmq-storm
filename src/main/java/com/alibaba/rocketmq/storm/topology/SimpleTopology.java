@@ -1,32 +1,48 @@
-package com.alibaba.rocketmq.storm.topology;
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import org.apache.commons.lang.math.NumberUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package com.alibaba.rocketmq.storm.topology;
 
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
-import backtype.storm.generated.AlreadyAliveException;
-import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.topology.BoltDeclarer;
 import backtype.storm.topology.TopologyBuilder;
-
 import com.alibaba.rocketmq.storm.bolt.RocketMqBolt;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
 import com.alibaba.rocketmq.storm.domain.RocketMQSpouts;
 import com.alibaba.rocketmq.storm.internal.tools.ConfigUtils;
 import com.alibaba.rocketmq.storm.spout.StreamMessageSpout;
 import com.alibaba.rocketmq.storm.spout.factory.RocketMQSpoutFactory;
+import org.apache.commons.lang.math.NumberUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+/**
+ * @author Von Gosling
+ */
 public class SimpleTopology {
-    private static final Logger LOG            = LoggerFactory.getLogger(SimpleTopology.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SimpleTopology.class);
 
-    private static final String BOLT_NAME      = "MQBolt";
+    private static final String BOLT_NAME = "MQBolt";
     private static final String PROP_FILE_NAME = "mqspout.default.prop";
 
-    private static Config       config         = new Config();
-    private static boolean      isLocalMode    = true;
+    private static Config config = new Config();
+    private static boolean isLocalMode = true;
 
     public static void main(String[] args) throws Exception {
         TopologyBuilder builder = buildTopology(ConfigUtils.init(PROP_FILE_NAME));
@@ -57,7 +73,7 @@ public class SimpleTopology {
 
     private static void submitTopology(TopologyBuilder builder) {
         try {
-            if (isLocalMode == true) {
+            if (isLocalMode) {
                 LocalCluster cluster = new LocalCluster();
 
                 config.put(Config.STORM_CLUSTER_MODE, "local");
@@ -73,10 +89,6 @@ public class SimpleTopology {
                         builder.createTopology());
             }
 
-        } catch (AlreadyAliveException e) {
-            LOG.error(e.getMessage(), e.getCause());
-        } catch (InvalidTopologyException e) {
-            LOG.error(e.getMessage(), e.getCause());
         } catch (Exception e) {
             LOG.error(e.getMessage(), e.getCause());
         }

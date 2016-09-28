@@ -1,20 +1,35 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package com.alibaba.rocketmq.storm.internal.tools;
+
+import backtype.storm.Config;
+import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
+import org.apache.commons.lang.BooleanUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import org.apache.commons.lang.BooleanUtils;
-
-import backtype.storm.Config;
-
-import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
-
 /**
  * Utilities for RocketMQ spout regarding its configuration and reading values
  * from the storm configuration.
- * 
+ *
  * @author Von Gosling
  */
 public abstract class ConfigUtils {
@@ -22,21 +37,21 @@ public abstract class ConfigUtils {
      * Storm configuration key pointing to a file containing rocketmq
      * configuration ({@code "rocketmq.config"}).
      */
-    public static final String CONFIG_FILE                   = "rocketmq.config";
+    public static final String CONFIG_FILE = "rocketmq.config";
     /**
      * Storm configuration key used to determine the rocketmq topic to read from
      * ( {@code "rocketmq.spout.topic"}).
      */
-    public static final String CONFIG_TOPIC                  = "rocketmq.spout.topic";
+    public static final String CONFIG_TOPIC = "rocketmq.spout.topic";
     /**
      * Default rocketmq topic to read from ({@code "rocketmq_spout_topic"}).
      */
-    public static final String CONFIG_DEFAULT_TOPIC          = "rocketmq_spout_topic";
+    public static final String CONFIG_DEFAULT_TOPIC = "rocketmq_spout_topic";
     /**
      * Storm configuration key used to determine the rocketmq consumer group (
      * {@code "rocketmq.spout.consumer.group"}).
      */
-    public static final String CONFIG_CONSUMER_GROUP         = "rocketmq.spout.consumer.group";
+    public static final String CONFIG_CONSUMER_GROUP = "rocketmq.spout.consumer.group";
     /**
      * Default rocketmq consumer group id (
      * {@code "rocketmq_spout_consumer_group"}).
@@ -46,22 +61,22 @@ public abstract class ConfigUtils {
      * Storm configuration key used to determine the rocketmq topic tag(
      * {@code "rocketmq.spout.topic.tag"}).
      */
-    public static final String CONFIG_TOPIC_TAG              = "rocketmq.spout.topic.tag";
+    public static final String CONFIG_TOPIC_TAG = "rocketmq.spout.topic.tag";
 
-    public static final String CONFIG_ROCKETMQ               = "rocketmq.config";
+    public static final String CONFIG_ROCKETMQ = "rocketmq.config";
 
-    public static final String CONFIG_PREFETCH_SIZE          = "rocketmq.prefetch.size";
+    public static final String CONFIG_PREFETCH_SIZE = "rocketmq.prefetch.size";
 
     /**
      * Reads configuration from a classpath resource stream obtained from the
      * current thread's class loader through
      * {@link ClassLoader#getSystemResourceAsStream(String)}.
-     * 
+     *
      * @param resource The resource to be read.
      * @return A {@link java.util.Properties} object read from the specified
-     *         resource.
+     * resource.
      * @throws IllegalArgumentException When the configuration file could not be
-     *             found or another I/O error occurs.
+     *                                  found or another I/O error occurs.
      */
     public static Properties getResource(final String resource) {
         InputStream input = Thread.currentThread().getContextClassLoader()
@@ -92,7 +107,9 @@ public abstract class ConfigUtils {
         String topic = (String) config.get(ConfigUtils.CONFIG_TOPIC);
         String consumerGroup = (String) config.get(ConfigUtils.CONFIG_CONSUMER_GROUP);
         String topicTag = (String) config.get(ConfigUtils.CONFIG_TOPIC_TAG);
-        Integer pullBatchSize = (Integer) config.get(ConfigUtils.CONFIG_PREFETCH_SIZE);
+        //Integer pullBatchSize = (Integer) config.get(ConfigUtils.CONFIG_PREFETCH_SIZE);
+        Integer pullBatchSize = Integer.parseInt((String) config.get(ConfigUtils.CONFIG_PREFETCH_SIZE));
+
         RocketMQConfig mqConfig = new RocketMQConfig(consumerGroup, topic, topicTag);
 
         if (pullBatchSize != null && pullBatchSize > 0) {

@@ -1,30 +1,45 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
 package com.alibaba.rocketmq.storm;
+
+import com.alibaba.rocketmq.client.consumer.DefaultMQPullConsumer;
+import com.alibaba.rocketmq.client.consumer.MessageQueueListener;
+import com.alibaba.rocketmq.common.message.MessageQueue;
+import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.storm.guava.collect.Lists;
-import org.apache.storm.guava.collect.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.alibaba.rocketmq.client.consumer.DefaultMQPullConsumer;
-import com.alibaba.rocketmq.client.consumer.MessageQueueListener;
-import com.alibaba.rocketmq.common.message.MessageQueue;
-import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
-
 /**
  * @author Von Gosling
  */
 public class MessagePullConsumer implements Serializable, MessageQueueListener {
-    private static final long               serialVersionUID   = 4641537253577312163L;
+    private static final long serialVersionUID = 4641537253577312163L;
 
-    private static final Logger             LOG                = LoggerFactory
-                                                                       .getLogger(MessagePullConsumer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MessagePullConsumer.class);
 
-    private final RocketMQConfig            config;
+    private final RocketMQConfig config;
 
     private transient DefaultMQPullConsumer consumer;
 
@@ -39,8 +54,7 @@ public class MessagePullConsumer implements Serializable, MessageQueueListener {
     }
 
     public void start() throws Exception {
-        consumer = (DefaultMQPullConsumer) MessageConsumerManager.getConsumerInstance(config, null,
-                false);
+        consumer = (DefaultMQPullConsumer) MessageConsumerManager.getConsumerInstance(config, null, false);
 
         consumer.registerMessageQueueListener(config.getTopic(), this);
 
