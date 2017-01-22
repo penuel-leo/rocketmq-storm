@@ -29,8 +29,8 @@ import com.alibaba.rocketmq.storm.MessagePullConsumer;
 import com.alibaba.rocketmq.storm.domain.BatchMessage;
 import com.alibaba.rocketmq.storm.domain.QueueOffsetCache;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
+import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
-import org.apache.storm.guava.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

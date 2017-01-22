@@ -19,6 +19,7 @@ package com.alibaba.rocketmq.storm;
 
 import com.alibaba.rocketmq.client.consumer.DefaultMQPullConsumer;
 import com.alibaba.rocketmq.client.consumer.MessageQueueListener;
+import com.alibaba.rocketmq.client.consumer.rebalance.AllocateMessageQueueAveragelyByCircle;
 import com.alibaba.rocketmq.common.message.MessageQueue;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
 import com.google.common.collect.Lists;
@@ -57,7 +58,7 @@ public class MessagePullConsumer implements Serializable, MessageQueueListener {
         consumer = (DefaultMQPullConsumer) MessageConsumerManager.getConsumerInstance(config, null, false);
 
         consumer.registerMessageQueueListener(config.getTopic(), this);
-
+        consumer.setAllocateMessageQueueStrategy(new AllocateMessageQueueAveragelyByCircle());
         this.consumer.start();
 
         LOG.info("Init consumer successfully,configuration->{} !", config);
