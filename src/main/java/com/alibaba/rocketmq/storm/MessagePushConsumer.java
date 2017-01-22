@@ -19,6 +19,7 @@ package com.alibaba.rocketmq.storm;
 
 import com.alibaba.rocketmq.client.consumer.DefaultMQPushConsumer;
 import com.alibaba.rocketmq.client.consumer.listener.MessageListener;
+import com.alibaba.rocketmq.client.consumer.rebalance.AllocateMessageQueueAveragelyByCircle;
 import com.alibaba.rocketmq.storm.domain.RocketMQConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,7 @@ public class MessagePushConsumer implements Serializable {
     public void start(MessageListener listener) throws Exception {
         consumer = (DefaultMQPushConsumer) MessageConsumerManager.getConsumerInstance(config,
                 listener, true);
-
+        consumer.setAllocateMessageQueueStrategy(new AllocateMessageQueueAveragelyByCircle());
         this.consumer.start();
 
         LOG.info("Init consumer successfully,configuration->{} !", config);
