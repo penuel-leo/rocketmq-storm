@@ -46,6 +46,7 @@ public class MessagePushConsumer implements Serializable {
         consumer = (DefaultMQPushConsumer) MessageConsumerManager.getConsumerInstance(config,
                 listener, true);
         consumer.setAllocateMessageQueueStrategy(new AllocateMessageQueueAveragelyByCircle());
+        consumer.setPullThresholdForQueue(2000);
         this.consumer.start();
 
         LOG.info("Init consumer successfully,configuration->{} !", config);
